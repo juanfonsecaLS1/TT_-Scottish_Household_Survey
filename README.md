@@ -155,8 +155,9 @@ summary_purpose
     ## 14 Day trip                               11.9  0.00470 
     ## 15 Escort - other                          1.58 0.000625
 
-![](README_files/figure-gfm/mode_split-1.png)<!-- --> Similarly, the
-split by year can be calculated with the following code:
+![](README_files/figure-gfm/mode_split-1.png)<!-- -->
+
+Similarly, the split by year can be calculated with the following code:
 
 ``` r
 summary_purpose_year = data_bicycle |>
@@ -221,5 +222,5 @@ summary_purpose_year |>
 
 ![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-The high variation of the splits might be related to the sampling for
-each year’s survey.
+The high variation of the splits might be linked to the different
+samples for each year’s survey.

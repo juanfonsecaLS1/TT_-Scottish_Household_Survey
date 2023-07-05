@@ -78,6 +78,7 @@ summary_purpose |>
   geom_col()+
   coord_flip()
 ```
+
 Similarly, the split by year can be calculated with the following code:
 
 ```{r}
@@ -118,5 +119,5 @@ summary_purpose_year |>
 ```
 
 
-The high variation of the splits might be related to the sampling for each year's survey.
+The high variation of the splits might be linked to the different samples for each year's survey.
 
