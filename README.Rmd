@@ -20,6 +20,8 @@ zip_files
 ```
 All the zip files are extracted with the following code:
 ```{r}
+#| eval = FALSE
+
 for (file in zip_files){  
   unzip(file,exdir = "raw_data")
   }
@@ -114,5 +116,7 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 
 ```
+
+
 The high variation of the splits might be related to the sampling for each year's survey.
 
