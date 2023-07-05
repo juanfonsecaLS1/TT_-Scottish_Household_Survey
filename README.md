@@ -220,7 +220,86 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> The high
+variation of the splits might be linked to the different samples for
+each year’s survey.
 
-The high variation of the splits might be linked to the different
-samples for each year’s survey.
+## Temporal Distribution of trips
+
+Using the start time when the recorded trips (`journeystart_hh`), we can
+build an hourly profile of the trips.
+
+``` r
+hourly_summary = data_bicycle |> 
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(journeystart_hh))
+hourly_summary
+```
+
+    ## # A tibble: 25 × 2
+    ##    journeystart_hh Trips
+    ##              <dbl> <dbl>
+    ##  1               8 227. 
+    ##  2              17 271. 
+    ##  3               9 123. 
+    ##  4               6  67.7
+    ##  5               7 169. 
+    ##  6              15 240. 
+    ##  7              16 199. 
+    ##  8              12 127. 
+    ##  9              13 110. 
+    ## 10              11 106. 
+    ## # ℹ 15 more rows
+
+The following code is used to plot the hourly trips profile.
+
+``` r
+hourly_summary |>
+  ggplot(aes(x=journeystart_hh,y = Trips))+
+    geom_line(linewidth = 0.7,col = "blue")+
+  geom_hline(yintercept = 0)+
+  theme_minimal()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> We can also
+produce the same analysis by trip purpose.
+
+``` r
+hourly_summary_purpose = data_bicycle |> 
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(journeystart_hh,purpose_old)) |> 
+  mutate(purpose_old = haven::as_factor(purpose_old))
+  
+hourly_summary_purpose
+```
+
+    ## # A tibble: 184 × 3
+    ##    journeystart_hh purpose_old              Trips
+    ##              <dbl> <fct>                    <dbl>
+    ##  1               8 Place of work           159.  
+    ##  2              17 Place of work           125.  
+    ##  3               9 Shopping                 12.0 
+    ##  4               6 Other - not coded         7.31
+    ##  5               7 Other - not coded         7.31
+    ##  6              15 Other - not coded         3.11
+    ##  7              16 Go home                  32.3 
+    ##  8              12 Partcipipating in sport  58.9 
+    ##  9              13 Go home                  15.7 
+    ## 10              11 Place of work            14.6 
+    ## # ℹ 174 more rows
+
+As shown in the plot below, the commuting trips have two clear peaks;
+for all other purposes the patterns are less notorious.
+
+``` r
+hourly_summary_purpose |>
+  filter(purpose_old %in% top_5_purposes) |>
+  mutate(purpose_old = fct_reorder(purpose_old, Trips)) |> 
+  ggplot(aes(x=journeystart_hh,y = Trips, col = purpose_old))+
+  geom_line(linewidth = 0.7)+
+  geom_hline(yintercept = 0)+
+  theme_minimal()+
+  scale_colour_viridis_d()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->

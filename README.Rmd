@@ -117,7 +117,48 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 
 ```
-
-
 The high variation of the splits might be linked to the different samples for each year's survey.
+
+## Temporal Distribution of trips
+
+Using the start time when the recorded trips (`journeystart_hh`), we can build an hourly profile of the trips.
+
+```{r}
+hourly_summary = data_bicycle |> 
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(journeystart_hh))
+hourly_summary
+```
+
+The following code is used to plot the hourly trips profile.
+
+```{r}
+hourly_summary |>
+  ggplot(aes(x=journeystart_hh,y = Trips))+
+    geom_line(linewidth = 0.7,col = "blue")+
+  geom_hline(yintercept = 0)+
+  theme_minimal()
+```
+We can also produce the same analysis by trip purpose.
+```{r}
+hourly_summary_purpose = data_bicycle |> 
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(journeystart_hh,purpose_old)) |> 
+  mutate(purpose_old = haven::as_factor(purpose_old))
+  
+hourly_summary_purpose
+```
+As shown in the plot below, the commuting trips have two clear peaks; for all other purposes the patterns are less notorious. 
+
+```{r}
+hourly_summary_purpose |>
+  filter(purpose_old %in% top_5_purposes) |>
+  mutate(purpose_old = fct_reorder(purpose_old, Trips)) |> 
+  ggplot(aes(x=journeystart_hh,y = Trips, col = purpose_old))+
+  geom_line(linewidth = 0.7)+
+  geom_hline(yintercept = 0)+
+  theme_minimal()+
+  scale_colour_viridis_d()
+    
+```
 
