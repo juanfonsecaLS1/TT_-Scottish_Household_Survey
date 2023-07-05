@@ -1,0 +1,118 @@
+---
+title: "Transport and Travel - Scotish Household Survey"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      message=FALSE,
+                      warning=FALSE)
+```
+
+The goal of this repository is to analyse the results of the Scottish Household Survey to obtain the mode splits.
+
+All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
+
+
+```{r cars}
+zip_files = list.files("raw_data/","\\.zip$",full.names = T)
+zip_files
+```
+All the zip files are extracted with the following code:
+```{r}
+for (file in zip_files){  
+  unzip(file,exdir = "raw_data")
+  }
+```
+
+
+Once the files have been unzipped, the files with the journey diaries are listed as follows: 
+
+```{r}
+SPSS_files = list.files(pattern = "journey.*\\.sav$",
+                        recursive = T,full.names = T)
+SPSS_files
+```
+
+All files are imported 
+
+```{r}
+library(haven)
+library(tidyverse)
+
+data = do.call(bind_rows,lapply(SPSS_files,read_sav))
+
+data |> head()
+```
+We are only interested in trips made by bicycle. According to the data dictionaries, the corresponding code is `4`.
+```{r}
+data_bicycle = data |> filter(mainmode == 4)
+data_bicycle |> head()
+```
+We can calculate the purpose split for the bicycle trips using the weight variables as follows:
+```{r}
+summary_purpose = data_bicycle |>
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(purpose_old)) |> 
+  mutate(Split = Trips/sum(Trips))
+summary_purpose
+```
+
+The `summary_purpose` object has some labelled columns, that includes the coded variables. The following code allows us to extract the labels for the trip purposes 
+
+```{r}
+summary_purpose = summary_purpose |> 
+  mutate(purpose_old = haven::as_factor(purpose_old))
+summary_purpose
+```
+
+```{r mode_split}
+#| echo = FALSE
+summary_purpose |>
+  data.frame() |> 
+  mutate(purpose_old = fct_reorder(purpose_old, Split)) |> 
+  ggplot(aes(x = purpose_old, y = Split))+
+  scale_y_continuous(labels = scales::percent)+
+  geom_col()+
+  coord_flip()
+```
+Similarly, the split by year can be calculated with the following code:
+
+```{r}
+summary_purpose_year = data_bicycle |>
+  summarise(Trips = sum(IND_WT*trav_wt),
+            .by = c(purpose_old,dyear)) |> 
+  mutate(Split = Trips/sum(Trips),.by = c(dyear))
+```
+
+The years are also a coded variable.
+
+```{r}
+summary_purpose_year = summary_purpose_year |>
+  mutate(purpose_old = haven::as_factor(purpose_old),
+         dyear = haven::as_factor(dyear))
+summary_purpose_year
+```
+We can see how the splits for the five most common purposes have changed from year to year. For this purpose, we extract the top 5 purposes from the previous analysis.
+
+```{r}
+top_5_purposes = summary_purpose |> slice_max(Split,n = 5) |> pull(purpose_old)
+top_5_purposes
+```
+
+
+We need to remove the `dataset/script` or extract the numerical part of the dyear column for plotting. 
+
+```{r}
+summary_purpose_year |> 
+  filter(purpose_old %in% top_5_purposes) |> 
+  mutate(Year = as.integer(str_extract(dyear,"\\d*")), 
+         purpose_old = fct_reorder(purpose_old, Split)) |> 
+  ggplot(aes(x = Year, y = Split, col = purpose_old)) + 
+  geom_line(linewidth = 1)+
+  scale_color_viridis_d()+
+  scale_y_continuous(labels = scales::percent)
+
+```
+The high variation of the splits might be related to the sampling for each year's survey.
+
