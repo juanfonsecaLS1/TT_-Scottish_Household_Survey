@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE,
 
 The goal of this repository is to analyse the results of the Scottish Household Survey to obtain the mode splits.
 
-All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
+All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775) 
 
 
 ```{r cars}
