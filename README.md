@@ -1,4 +1,4 @@
-Transport and Travel - Scotish Household Survey
+Transport and Travel - Scottish Household Survey
 ================
 
 The goal of this repository is to analyse the results of the Scottish

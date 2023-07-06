@@ -1,5 +1,5 @@
 ---
-title: "Transport and Travel - Scotish Household Survey"
+title: "Transport and Travel - Scottish Household Survey"
 output: github_document
 ---
 
