@@ -2,24 +2,35 @@ Transport and Travel - Scottish Household Survey
 ================
 
 The goal of this repository is to analyse the results of the Scottish
-Household Survey to obtain the mode splits.
+Household Survey from 2014 to 2019 to estimate the overall mode splits
+and temporal distribution of trips made by bicycle.
 
 All the zip files have been obtained from the [UK data
 service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
+
+First of all, a copy of the original files can be obtained with the code
+below. This code is to be run just once.
+
+``` r
+dir.create("raw_data")
+system("gh release download 1 --dir raw_data")
+```
+
+We can list the files with the following code:
 
 ``` r
 zip_files = list.files("raw_data/","\\.zip$",full.names = T)
 zip_files
 ```
 
-    ## [1] "raw_data/7964spss_bcc98090d92c0cad9d0e65e37ddc0591.zip"   
-    ## [2] "raw_data/8168spss_7E71FE4E91FBD90B6A22931DBFB9444C_V1.zip"
-    ## [3] "raw_data/8333spss_2119F1608B6E9B643BBCADDFC5E865D5_V1.zip"
-    ## [4] "raw_data/8463spss_27B8A9C6A2988942DA5DF9EB6D9CCE35_V1.zip"
-    ## [5] "raw_data/8617spss_EB73235EFE70CDB92AAAFBDA4A4BDBE7_V1.zip"
-    ## [6] "raw_data/8775spss_647772365F41501FC26EA57EDF2A7077_V1.zip"
+    ## [1] "raw_data//7964spss_bcc98090d92c0cad9d0e65e37ddc0591.zip"   
+    ## [2] "raw_data//8168spss_7E71FE4E91FBD90B6A22931DBFB9444C_V1.zip"
+    ## [3] "raw_data//8333spss_2119F1608B6E9B643BBCADDFC5E865D5_V1.zip"
+    ## [4] "raw_data//8463spss_27B8A9C6A2988942DA5DF9EB6D9CCE35_V1.zip"
+    ## [5] "raw_data//8617spss_EB73235EFE70CDB92AAAFBDA4A4BDBE7_V1.zip"
+    ## [6] "raw_data//8775spss_647772365F41501FC26EA57EDF2A7077_V1.zip"
 
-All the zip files are extracted with the following code:
+All the zipped files are extracted with the following code:
 
 ``` r
 for (file in zip_files){  
@@ -27,8 +38,8 @@ for (file in zip_files){
   }
 ```
 
-Once the files have been unzipped, the files with the journey diaries
-are listed as follows:
+Once the files have been unzipped, the `*.sav` files containing the
+journey diaries are listed as follows:
 
 ``` r
 SPSS_files = list.files(pattern = "journey.*\\.sav$",
@@ -43,7 +54,7 @@ SPSS_files
     ## [5] "./raw_data/UKDA-8617-spss/spss/spss25/shs2018_td_journey_public.sav"
     ## [6] "./raw_data/UKDA-8775-spss/spss/spss25/shs2019_td_journey_public.sav"
 
-All files are imported
+All files are imported using the `haven` library with this code:
 
 ``` r
 library(haven)
@@ -126,9 +137,9 @@ summary_purpose
     ## 14 13 [Day trip]                               11.9  0.00470 
     ## 15 27 [Escort - other]                          1.58 0.000625
 
-The `summary_purpose` object has some labelled columns, that includes
-the coded variables. The following code allows us to extract the labels
-for the trip purposes
+The `summary_purpose` object has coded variables which are stored as
+labelled vectors. The following code allows us to extract the labels
+from the `purpose_old` column.
 
 ``` r
 summary_purpose = summary_purpose |> 
@@ -220,7 +231,7 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> The high
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> The high
 variation of the splits might be linked to the different samples for
 each year’s survey.
 
@@ -261,7 +272,7 @@ hourly_summary |>
   theme_minimal()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- --> We can also
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> We can also
 produce the same analysis by trip purpose.
 
 ``` r
@@ -288,8 +299,9 @@ hourly_summary_purpose
     ## 10              11 Place of work            14.6 
     ## # ℹ 174 more rows
 
-As shown in the plot below, the commuting trips have two clear peaks;
-for all other purposes the patterns are less notorious.
+As shown in the plot below, the *commuting* and *education* trips have
+two clear peaks; for all other purposes the temporal patterns are less
+clear.
 
 ``` r
 hourly_summary_purpose |>
@@ -302,4 +314,4 @@ hourly_summary_purpose |>
   scale_colour_viridis_d()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->

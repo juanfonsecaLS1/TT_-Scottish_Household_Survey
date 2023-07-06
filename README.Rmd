@@ -9,16 +9,27 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning=FALSE)
 ```
 
-The goal of this repository is to analyse the results of the Scottish Household Survey to obtain the mode splits.
+The goal of this repository is to analyse the results of the Scottish Household Survey from 2014 to 2019 to estimate the overall mode splits and temporal distribution of trips made by bicycle.
 
-All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775) 
+All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
 
+First of all, a copy of the original files can be obtained with the code below. This code is to be run just once.
+
+```{r}
+#| eval = FALSE
+dir.create("raw_data")
+system("gh release download 1 --dir raw_data")
+```
+
+
+We can list the files with the following code:
 
 ```{r cars}
 zip_files = list.files("raw_data/","\\.zip$",full.names = T)
 zip_files
 ```
-All the zip files are extracted with the following code:
+
+All the zipped files are extracted with the following code:
 ```{r}
 #| eval = FALSE
 
@@ -28,7 +39,7 @@ for (file in zip_files){
 ```
 
 
-Once the files have been unzipped, the files with the journey diaries are listed as follows: 
+Once the files have been unzipped, the `*.sav` files containing the journey diaries are listed as follows: 
 
 ```{r}
 SPSS_files = list.files(pattern = "journey.*\\.sav$",
@@ -36,7 +47,7 @@ SPSS_files = list.files(pattern = "journey.*\\.sav$",
 SPSS_files
 ```
 
-All files are imported 
+All files are imported using the `haven` library with this code:
 
 ```{r}
 library(haven)
@@ -60,7 +71,7 @@ summary_purpose = data_bicycle |>
 summary_purpose
 ```
 
-The `summary_purpose` object has some labelled columns, that includes the coded variables. The following code allows us to extract the labels for the trip purposes 
+The `summary_purpose` object has coded variables which are stored as labelled vectors. The following code allows us to extract the labels from the `purpose_old` column. 
 
 ```{r}
 summary_purpose = summary_purpose |> 
@@ -148,7 +159,8 @@ hourly_summary_purpose = data_bicycle |>
   
 hourly_summary_purpose
 ```
-As shown in the plot below, the commuting trips have two clear peaks; for all other purposes the patterns are less notorious. 
+
+As shown in the plot below, the _commuting_ and _education_ trips have two clear peaks; for all other purposes the temporal patterns are less clear. 
 
 ```{r}
 hourly_summary_purpose |>
