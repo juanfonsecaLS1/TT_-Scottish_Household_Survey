@@ -1,6 +1,8 @@
 ---
 title: "Transport and Travel - Scottish Household Survey"
 output: github_document
+bibliography: scotrefs.bib 
+csl: ieee.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -9,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning=FALSE)
 ```
 
-The goal of this repository is to analyse the results of the Scottish Household Survey from 2014 to 2019 to estimate the overall mode splits and temporal distribution of trips made by bicycle.
+The goal of this repository is to analyse the results of the Scottish Household Survey from 2014 to 2019 @SHS14,@SHS15,@SHS16,@SHS17,@SHS18,@SHS19 to estimate the overall mode splits and temporal distribution of trips made by bicycle.
 
 All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
 
@@ -172,5 +174,85 @@ hourly_summary_purpose |>
   theme_minimal()+
   scale_colour_viridis_d()
     
+```
+
+## Trip Length Distribution
+The following section includes a brief analysis of the trip length distribution.
+For this analysis, the following distance bands are defined (in km)
+```{r}
+tld_bands = c(0,5,10,15,25,50,100,500,1000,2500)
+```
+
+### By mode
+
+```{r}
+TLD_mode = data |> 
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(mainmode,dist_band)) |> 
+  mutate(perc = Trips/sum(Trips),
+         .by = c(mainmode))
+```
+
+```{r}
+TLD_mode |> 
+  drop_na(dist_band) |> 
+  ggplot(aes(x=dist_band,y=perc,fill=haven::as_factor(mainmode)))+
+  geom_col()+
+  facet_wrap(haven::as_factor(mainmode)~.)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90))
+```
+### By purpose
+The following exercise uses the `purpose_old` categories. A finer analysis is
+possible if the `purpose_new` and `purpose_new2`
+```{r}
+TLD_purpose = data |>
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  drop_na(dist_band) |> 
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(purpose_old,dist_band)) |> 
+  mutate(perc_band = Trips/sum(Trips),
+         .by = c(purpose_old)) |> 
+  mutate(perc_purp = Trips/sum(Trips),
+         .by = c(dist_band))
+
+```
+
+```{r}
+TLD_purpose |> 
+  ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
+  geom_col(position = "fill")+
+  scale_y_continuous(labels = scales::percent_format())+
+  theme(legend.position = "left",
+        axis.text.x = element_text(angle = 90))
+```
+```{r}
+TLD_purpose |> 
+  ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
+  geom_col()+
+  scale_y_continuous(labels = scales::percent_format())+
+  facet_wrap(haven::as_factor(purpose_old)~.)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90))
+```
+### By mode and purpose
+
+```{r}
+TLD_mode_purp = data |> 
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(mainmode,purpose_old,dist_band)) |> 
+  mutate(perc = Trips/sum(Trips),
+         .by = c(mainmode,purpose_old))
 ```
 

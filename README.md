@@ -2,8 +2,9 @@ Transport and Travel - Scottish Household Survey
 ================
 
 The goal of this repository is to analyse the results of the Scottish
-Household Survey from 2014 to 2019 to estimate the overall mode splits
-and temporal distribution of trips made by bicycle.
+Household Survey from 2014 to 2019 \[1\],\[2\],\[3\],\[4\],\[5\],\[6\]
+to estimate the overall mode splits and temporal distribution of trips
+made by bicycle.
 
 All the zip files have been obtained from the [UK data
 service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
@@ -23,12 +24,12 @@ zip_files = list.files("raw_data/","\\.zip$",full.names = T)
 zip_files
 ```
 
-    ## [1] "raw_data//7964spss_bcc98090d92c0cad9d0e65e37ddc0591.zip"   
-    ## [2] "raw_data//8168spss_7E71FE4E91FBD90B6A22931DBFB9444C_V1.zip"
-    ## [3] "raw_data//8333spss_2119F1608B6E9B643BBCADDFC5E865D5_V1.zip"
-    ## [4] "raw_data//8463spss_27B8A9C6A2988942DA5DF9EB6D9CCE35_V1.zip"
-    ## [5] "raw_data//8617spss_EB73235EFE70CDB92AAAFBDA4A4BDBE7_V1.zip"
-    ## [6] "raw_data//8775spss_647772365F41501FC26EA57EDF2A7077_V1.zip"
+    ## [1] "raw_data/7964spss_bcc98090d92c0cad9d0e65e37ddc0591.zip"   
+    ## [2] "raw_data/8168spss_7E71FE4E91FBD90B6A22931DBFB9444C_V1.zip"
+    ## [3] "raw_data/8333spss_2119F1608B6E9B643BBCADDFC5E865D5_V1.zip"
+    ## [4] "raw_data/8463spss_27B8A9C6A2988942DA5DF9EB6D9CCE35_V1.zip"
+    ## [5] "raw_data/8617spss_EB73235EFE70CDB92AAAFBDA4A4BDBE7_V1.zip"
+    ## [6] "raw_data/8775spss_647772365F41501FC26EA57EDF2A7077_V1.zip"
 
 All the zipped files are extracted with the following code:
 
@@ -315,3 +316,150 @@ hourly_summary_purpose |>
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+## Trip Length Distribution
+
+The following section includes a brief analysis of the trip length
+distribution. For this analysis, the following distance bands are
+defined (in km)
+
+``` r
+tld_bands = c(0,5,10,15,25,50,100,500,1000,2500)
+```
+
+### By mode
+
+``` r
+TLD_mode = data |> 
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(mainmode,dist_band)) |> 
+  mutate(perc = Trips/sum(Trips),
+         .by = c(mainmode))
+```
+
+``` r
+TLD_mode |> 
+  drop_na(dist_band) |> 
+  ggplot(aes(x=dist_band,y=perc,fill=haven::as_factor(mainmode)))+
+  geom_col()+
+  facet_wrap(haven::as_factor(mainmode)~.)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- --> \### By
+purpose The following exercise uses the `purpose_old` categories. A
+finer analysis is possible if the `purpose_new` and `purpose_new2`
+
+``` r
+TLD_purpose = data |>
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  drop_na(dist_band) |> 
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(purpose_old,dist_band)) |> 
+  mutate(perc_band = Trips/sum(Trips),
+         .by = c(purpose_old)) |> 
+  mutate(perc_purp = Trips/sum(Trips),
+         .by = c(dist_band))
+```
+
+``` r
+TLD_purpose |> 
+  ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
+  geom_col(position = "fill")+
+  scale_y_continuous(labels = scales::percent_format())+
+  theme(legend.position = "left",
+        axis.text.x = element_text(angle = 90))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+
+``` r
+TLD_purpose |> 
+  ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
+  geom_col()+
+  scale_y_continuous(labels = scales::percent_format())+
+  facet_wrap(haven::as_factor(purpose_old)~.)+
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 90))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- --> \### By mode
+and purpose
+
+``` r
+TLD_mode_purp = data |> 
+  mutate(dist_band = cut(roadnet_kms,
+                         breaks = tld_bands,
+                         include.lowest = T),
+         ) |>
+  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+            .by = c(mainmode,purpose_old,dist_band)) |> 
+  mutate(perc = Trips/sum(Trips),
+         .by = c(mainmode,purpose_old))
+```
+
+<div id="refs" class="references csl-bib-body">
+
+<div id="ref-SHS14" class="csl-entry">
+
+<span class="csl-left-margin">\[1\]
+</span><span class="csl-right-inline">I. MORI and S. Government,
+“Scottish household survey, 2014.” UK Data Service, 2017. doi:
+[10.5255/UKDA-SN-7964-2](https://doi.org/10.5255/UKDA-SN-7964-2).</span>
+
+</div>
+
+<div id="ref-SHS15" class="csl-entry">
+
+<span class="csl-left-margin">\[2\]
+</span><span class="csl-right-inline">I. MORI and S. Government,
+“Scottish household survey, 2015.” UK Data Service, 2020. doi:
+[10.5255/UKDA-SN-8168-2](https://doi.org/10.5255/UKDA-SN-8168-2).</span>
+
+</div>
+
+<div id="ref-SHS16" class="csl-entry">
+
+<span class="csl-left-margin">\[3\]
+</span><span class="csl-right-inline">I. MORI and S. Government,
+“Scottish household survey, 2016.” UK Data Service, 2020. doi:
+[10.5255/UKDA-SN-8333-2](https://doi.org/10.5255/UKDA-SN-8333-2).</span>
+
+</div>
+
+<div id="ref-SHS17" class="csl-entry">
+
+<span class="csl-left-margin">\[4\]
+</span><span class="csl-right-inline">S. Government and I. MORI,
+“Scottish household survey, 2017.” UK Data Service, 2020. doi:
+[10.5255/UKDA-SN-8463-1](https://doi.org/10.5255/UKDA-SN-8463-1).</span>
+
+</div>
+
+<div id="ref-SHS18" class="csl-entry">
+
+<span class="csl-left-margin">\[5\]
+</span><span class="csl-right-inline">S. Government and I. MORI,
+“Scottish household survey, 2018.” UK Data Service, 2020. doi:
+[10.5255/UKDA-SN-8617-1](https://doi.org/10.5255/UKDA-SN-8617-1).</span>
+
+</div>
+
+<div id="ref-SHS19" class="csl-entry">
+
+<span class="csl-left-margin">\[6\]
+</span><span class="csl-right-inline">S. Government and I. MORI,
+“Scottish household survey, 2019.” UK Data Service, 2021. doi:
+[10.5255/UKDA-SN-8775-1](https://doi.org/10.5255/UKDA-SN-8775-1).</span>
+
+</div>
+
+</div>
