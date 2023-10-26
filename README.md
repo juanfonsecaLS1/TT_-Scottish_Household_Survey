@@ -335,7 +335,7 @@ TLD_mode = data |>
                          breaks = tld_bands,
                          include.lowest = T),
          ) |>
-  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+  summarise(Trips = sum(trav_wt,na.rm = T),
             .by = c(mainmode,dist_band)) |> 
   mutate(perc = Trips/sum(Trips),
          .by = c(mainmode))
@@ -362,7 +362,7 @@ TLD_purpose = data |>
                          include.lowest = T),
          ) |>
   drop_na(dist_band) |> 
-  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+  summarise(Trips = sum(trav_wt,na.rm = T),
             .by = c(purpose_old,dist_band)) |> 
   mutate(perc_band = Trips/sum(Trips),
          .by = c(purpose_old)) |> 
@@ -375,7 +375,7 @@ TLD_purpose |>
   ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
   geom_col(position = "fill")+
   scale_y_continuous(labels = scales::percent_format())+
-  theme(legend.position = "left",
+  theme(legend.position = "bottom",
         axis.text.x = element_text(angle = 90))
 ```
 
@@ -391,8 +391,9 @@ TLD_purpose |>
         axis.text.x = element_text(angle = 90))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- --> \### By mode
-and purpose
+![](README_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+
+### By mode and purpose
 
 ``` r
 TLD_mode_purp = data |> 
@@ -400,11 +401,24 @@ TLD_mode_purp = data |>
                          breaks = tld_bands,
                          include.lowest = T),
          ) |>
-  summarise(Trips = sum(IND_WT*trav_wt,na.rm = T),
+  summarise(Trips = sum(trav_wt,na.rm = T),
             .by = c(mainmode,purpose_old,dist_band)) |> 
   mutate(perc = Trips/sum(Trips),
          .by = c(mainmode,purpose_old))
 ```
+
+``` r
+TLD_mode_purp |> 
+  drop_na(dist_band, mainmode) |> 
+  filter(mainmode<9) |> 
+  ggplot(aes(x=dist_band,y=perc,fill=haven::as_factor(purpose_old)))+
+  geom_col()+
+  facet_wrap(haven::as_factor(mainmode)~.)+
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(angle = 90))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
 
 <div id="refs" class="references csl-bib-body">
 
