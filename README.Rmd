@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning=FALSE)
 ```
 
-The goal of this repository is to analyse the results of the Scottish Household Survey from 2014 to 2019 @SHS14,@SHS15,@SHS16,@SHS17,@SHS18,@SHS19 to estimate the overall mode splits and temporal distribution of trips made by bicycle.
+The goal of this repository is to analyse the results of the Scottish Household Survey from 2014 to 2019 @SHS14,@SHS15,@SHS16,@SHS17,@SHS18,@SHS19 to estimate the overall mode splits and temporal distribution of trips made by bicycle. Some details on the weighting methodology of the survey can be found [here](https://www.gov.scot/publications/scottish-household-survey-2021-methodology-fieldwork-outcomes/pages/7/)
 
 All the zip files have been obtained from the [UK data service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
 
@@ -23,7 +23,6 @@ dir.create("raw_data")
 system("gh release download 1 --dir raw_data")
 ```
 
-
 We can list the files with the following code:
 
 ```{r cars}
@@ -32,6 +31,7 @@ zip_files
 ```
 
 All the zipped files are extracted with the following code:
+
 ```{r}
 #| eval = FALSE
 
@@ -40,8 +40,7 @@ for (file in zip_files){
   }
 ```
 
-
-Once the files have been unzipped, the `*.sav` files containing the journey diaries are listed as follows: 
+Once the files have been unzipped, the `*.sav` files containing the journey diaries are listed as follows:
 
 ```{r}
 SPSS_files = list.files(pattern = "journey.*\\.sav$",
@@ -54,26 +53,31 @@ All files are imported using the `haven` library with this code:
 ```{r}
 library(haven)
 library(tidyverse)
+library(kableExtra)
 
 data = do.call(bind_rows,lapply(SPSS_files,read_sav))
 
 data |> head()
 ```
+
 We are only interested in trips made by bicycle. According to the data dictionaries, the corresponding code is `4`.
+
 ```{r}
 data_bicycle = data |> filter(mainmode == 4)
 data_bicycle |> head()
 ```
+
 We can calculate the purpose split for the bicycle trips using the weight variables as follows:
+
 ```{r}
 summary_purpose = data_bicycle |>
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(purpose_old)) |> 
   mutate(Split = Trips/sum(Trips))
 summary_purpose
 ```
 
-The `summary_purpose` object has coded variables which are stored as labelled vectors. The following code allows us to extract the labels from the `purpose_old` column. 
+The `summary_purpose` object has coded variables which are stored as labelled vectors. The following code allows us to extract the labels from the `purpose_old` column.
 
 ```{r}
 summary_purpose = summary_purpose |> 
@@ -96,7 +100,7 @@ Similarly, the split by year can be calculated with the following code:
 
 ```{r}
 summary_purpose_year = data_bicycle |>
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(purpose_old,dyear)) |> 
   mutate(Split = Trips/sum(Trips),.by = c(dyear))
 ```
@@ -109,6 +113,7 @@ summary_purpose_year = summary_purpose_year |>
          dyear = haven::as_factor(dyear))
 summary_purpose_year
 ```
+
 We can see how the splits for the five most common purposes have changed from year to year. For this purpose, we extract the top 5 purposes from the previous analysis.
 
 ```{r}
@@ -116,8 +121,7 @@ top_5_purposes = summary_purpose |> slice_max(Split,n = 5) |> pull(purpose_old)
 top_5_purposes
 ```
 
-
-We need to remove the `dataset/script` or extract the numerical part of the dyear column for plotting. 
+We need to remove the `dataset/script` or extract the numerical part of the dyear column for plotting.
 
 ```{r}
 summary_purpose_year |> 
@@ -130,6 +134,7 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 
 ```
+
 The high variation of the splits might be linked to the different samples for each year's survey.
 
 ## Temporal Distribution of trips
@@ -138,7 +143,7 @@ Using the start time when the recorded trips (`journeystart_hh`), we can build a
 
 ```{r}
 hourly_summary = data_bicycle |> 
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(journeystart_hh))
 hourly_summary
 ```
@@ -152,17 +157,19 @@ hourly_summary |>
   geom_hline(yintercept = 0)+
   theme_minimal()
 ```
+
 We can also produce the same analysis by trip purpose.
+
 ```{r}
 hourly_summary_purpose = data_bicycle |> 
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(journeystart_hh,purpose_old)) |> 
   mutate(purpose_old = haven::as_factor(purpose_old))
   
 hourly_summary_purpose
 ```
 
-As shown in the plot below, the _commuting_ and _education_ trips have two clear peaks; for all other purposes the temporal patterns are less clear. 
+As shown in the plot below, the *commuting* and *education* trips have two clear peaks; for all other purposes the temporal patterns are less clear.
 
 ```{r}
 hourly_summary_purpose |>
@@ -177,8 +184,9 @@ hourly_summary_purpose |>
 ```
 
 ## Trip Length Distribution
-The following section includes a brief analysis of the trip length distribution.
-For this analysis, the following distance bands are defined (in km)
+
+The following section includes a brief analysis of the trip length distribution. For this analysis, the following distance bands are defined (in km)
+
 ```{r}
 tld_bands = c(0,5,10,15,25,50,100,500,1000,2500)
 ```
@@ -206,9 +214,11 @@ TLD_mode |>
   theme(legend.position = "none",
         axis.text.x = element_text(angle = 90))
 ```
+
 ### By purpose
-The following exercise uses the `purpose_old` categories. A finer analysis is
-possible if the `purpose_new` and `purpose_new2`
+
+The following exercise uses the `purpose_old` categories. A finer analysis is possible if the `purpose_new` and `purpose_new2`
+
 ```{r}
 TLD_purpose = data |>
   mutate(dist_band = cut(roadnet_kms,
@@ -233,6 +243,7 @@ TLD_purpose |>
   theme(legend.position = "bottom",
         axis.text.x = element_text(angle = 90))
 ```
+
 ```{r}
 TLD_purpose |> 
   ggplot(aes(x=dist_band,y=perc_purp,fill=haven::as_factor(purpose_old)))+
@@ -258,7 +269,6 @@ TLD_mode_purp = data |>
 
 ```
 
-
 ```{r}
 TLD_mode_purp |> 
   drop_na(dist_band, mainmode) |> 
@@ -269,4 +279,216 @@ TLD_mode_purp |>
   theme(legend.position = "bottom",
         axis.text.x = element_text(angle = 90))
 ```
+
+## Annualisation factors calculation
+
+In order to estimate the trip frequency by purpose, the stage tables from the survey are used. The following code loads the data into the environment.
+
+```{r}
+#| warning=FALSE
+SPSS_files_stage = list.files(pattern = "stage.*\\.sav$",
+                        recursive = T,full.names = T)
+
+data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
+```
+
+As in the previous analysis, we are interested only in the bicycle trips (`mode` = `4`).
+Although bike might not be the main mode for all the trip, all bike stages are considered
+for this analysis. Subsequently, we select the columns of interest and discard duplicated records
+
+```{r}
+bike_stages <- data.stage |> 
+  filter(mode == 4) |> 
+  select(UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday) |> 
+  unique()
+```
+
+Firstly, we explore the overall trip frequency splits by day of the week
+
+```{r}
+bike_stages |> 
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear)) |> 
+  select(-Total) |>
+  mutate(across(c("dyear",travday),as_factor)) |> 
+  pivot_wider(names_from = dyear,values_from = Perc) |> 
+  arrange(travday) |>
+  kable(digits = 3) |> 
+  kable_classic() |>
+  as_image(width = 10,file = "README_files/figure-gfm/wday_splits.png")
+```
+
+
+```{r}
+
+bike_stages |> 
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear)) |> 
+  select(-Total) |> 
+  ggplot(aes(x=haven::as_factor(dyear), y = Perc, fill = haven::as_factor(travday)))+
+  scale_y_continuous(
+    # limits = c(0,0.3),
+    labels = scales::percent)+
+  geom_col()+
+  scale_fill_viridis_d()+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 30,vjust = 1,hjust = 1))+
+  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel")
+```
+Since travel patters and frequency would vary among trip purposes, we need to
+produce a more dissagregated analysis. Thus, we first define groups of trip purposes
+from the `new_purpose` column. The following code identifies the different trip
+purposes that people logged in their trip diaries of the survey when using the bike.
+```{r}
+SHS_purposes_bike <- bike_stages |>
+  select(purpose_new) |>
+  unique() |> 
+  mutate(p.label = as_factor(purpose_new))
+```
+,
+A correspondence between trip purposes for the NPT project has been defined as follows:
+
+```{r}
+NPT_purposes_equiv <- tribble(
+  ~ purpose_new,  ~ NPT_purpose,
+  3, 'Commute',
+  103, 'Commute',
+  4, 'Shopping',
+  104, 'Shopping',
+  15, 'Workout',
+  29, 'Other',
+  129, 'Other',
+  1, 'Other',
+  115, 'Workout',
+  34, 'Social',
+  6, 'Social',
+  19, 'Workout',
+  24, 'Other',
+  106, 'Social',
+  5, 'Social',
+  105, 'Social',
+  12, 'Other',
+  112, 'Other',
+  11, 'School',
+  111, 'School',
+  30, 'Workout',
+  130, 'Workout',
+  23, 'Other',
+  123, 'Other',
+  7, 'School',
+  107, 'School',
+  2, 'Other',
+  102, 'Other',
+  36, 'Social',
+  31, 'Other',
+  131, 'Other',
+  119, 'Workout',
+  35, 'Social',
+  26, 'Social',
+  126, 'Social',
+  25, 'Social',
+  125, 'Social',
+  17, 'Other',
+  22, 'Other',
+  122, 'Other',
+  135, 'Social',
+  124, 'Other',
+  33, 'Other',
+  136, 'Social',
+  117, 'Other',
+  226, 'Social',
+  18, 'Other',
+  118, 'Other',
+  13, 'Workout',
+  113, 'Workout',
+  133, 'Other',
+  114, 'Workout',
+  134, 'Social'
+)
+```
+
+The following table shows how the `new_purpose` values have been grouped into 6 wider categories:
+```{r}
+tbl_purposes <- SHS_purposes_bike |>
+  left_join(NPT_purposes_equiv,by = "purpose_new") |>
+  arrange(NPT_purpose) 
+
+kable(tbl_purposes |>
+                       select(-NPT_purpose)) |>
+  pack_rows(index = table(tbl_purposes$NPT_purpose)) |> 
+  kable_classic() |>
+  as_image(width = 10,file = "README_files/figure-gfm/purpose_table.png")
+```
+
+Based on this purposes, we can produce a plot for proportion of trips by day of travel
+
+```{r}
+bike_stages |> 
+left_join(NPT_purposes_equiv,by = "purpose_new") |>    
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday,NPT_purpose)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear,NPT_purpose)) |> 
+  select(-Total) |> 
+  ggplot(aes(x=haven::as_factor(dyear), y = Perc, fill = haven::as_factor(travday)))+
+  scale_y_continuous(
+    # limits = c(0,0.3),
+    labels = scales::percent)+
+  geom_col()+
+  facet_wrap(NPT_purpose~.)+
+  scale_fill_viridis_d()+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 30,vjust = 1,hjust = 1))+
+  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel")
+
+```
+In order to produce the annualisation factors, we have to estimate the trip
+frequency by purpose from the survey. First the number of trips by day of
+the week is calculated for each respondent of the survey. Then, we calculated
+the weighted mean and median across all respondents using the
+travel diary weight (`trav_wt`). This calculations are applied for each category
+of the NTP purposes. 
+
+```{r}
+purpose_factors = bike_stages |>
+  left_join(NPT_purposes_equiv,by = "purpose_new") |> 
+  summarise(N_trips = n(),
+            .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
+  # mutate(N_trips_weighted = N_trips*trav_wt) |> 
+  summarise(N_trips_mean = weighted.mean(N_trips,trav_wt),
+            N_trips_median=matrixStats::weightedMedian(N_trips,trav_wt),
+            .by = c(travday,NPT_purpose)) |> 
+  mutate(wd.type = case_when(travday<6~"weekday",
+                            travday==6~"saturday",
+                            TRUE~"sunday/bankholiday"))
+```
+
+In order to consider the different weights of each type of day in a year
+i.e., the total number of Mondays, Tuesdays, etc; days are grouped into weekdays,
+Saturdays and Sundays/bank holidays. Finally, assuming that every year in
+Scotland has 250 weekdays, 52 Saturdays and 63 Sundays/Bank holidays, we calculate
+the annualisation factor for each trip purpose.
+
+```{r}
+purpose_factors_dtype = purpose_factors |>
+  summarise(across(c(N_trips_mean,N_trips_median),
+                   mean),
+            .by = c(wd.type,NPT_purpose)) |> 
+  mutate(wd.wt = case_when(wd.type=="weekday"~250,
+                           wd.type=="saturday"~52,
+                           wd.type=="sunday/bankholiday"~63)) |> 
+  summarise(factor_AADT = weighted.mean(N_trips_mean,wd.wt),
+            .by = NPT_purpose)
+
+purpose_factors_dtype |> 
+  kbl(digits=4) |>
+  kable_classic_2() |>
+  as_image(width = 10,file = "README_files/figure-gfm/AADT_factors.png")
+```
+
+
 

@@ -4,7 +4,9 @@ Transport and Travel - Scottish Household Survey
 The goal of this repository is to analyse the results of the Scottish
 Household Survey from 2014 to 2019 \[1\],\[2\],\[3\],\[4\],\[5\],\[6\]
 to estimate the overall mode splits and temporal distribution of trips
-made by bicycle.
+made by bicycle. Some details on the weighting methodology of the survey
+can be found
+[here](https://www.gov.scot/publications/scottish-household-survey-2021-methodology-fieldwork-outcomes/pages/7/)
 
 All the zip files have been obtained from the [UK data
 service](https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8775)
@@ -60,6 +62,7 @@ All files are imported using the `haven` library with this code:
 ``` r
 library(haven)
 library(tidyverse)
+library(kableExtra)
 
 data = do.call(bind_rows,lapply(SPSS_files,read_sav))
 
@@ -113,7 +116,7 @@ weight variables as follows:
 
 ``` r
 summary_purpose = data_bicycle |>
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(purpose_old)) |> 
   mutate(Split = Trips/sum(Trips))
 summary_purpose
@@ -122,21 +125,21 @@ summary_purpose
     ## # A tibble: 15 × 3
     ##    purpose_old                                 Trips    Split
     ##    <dbl+lbl>                                   <dbl>    <dbl>
-    ##  1  1 [Place of work]                         909.   0.359   
-    ##  2  4 [Shopping]                              202.   0.0797  
-    ##  3 14 [Other - not coded]                      65.0  0.0256  
-    ##  4 28 [Go home]                               334.   0.132   
-    ##  5 11 [Partcipipating in sport]               419.   0.165   
-    ##  6 10 [Entertainment/other public activities]   8.76 0.00345 
-    ##  7  7 [visiting Friends or relatives]         192.   0.0756  
-    ##  8  6 [Other personal business]                89.2  0.0352  
-    ##  9 29 [Just go for a walk]                     10.0  0.00396 
-    ## 10  3 [Educational establishment]             248.   0.0980  
-    ## 11  5 [Visit hospital or other health]          8.60 0.00339 
-    ## 12  2 [In course of work]                      17.5  0.00690 
-    ## 13  9 [Easting/drinking other occasions]       18.7  0.00737 
-    ## 14 13 [Day trip]                               11.9  0.00470 
-    ## 15 27 [Escort - other]                          1.58 0.000625
+    ##  1  1 [Place of work]                         555.   0.361   
+    ##  2  4 [Shopping]                              132.   0.0858  
+    ##  3 14 [Other - not coded]                      42.1  0.0274  
+    ##  4 28 [Go home]                               188.   0.123   
+    ##  5 11 [Partcipipating in sport]               285.   0.185   
+    ##  6 10 [Entertainment/other public activities]   7.1  0.00462 
+    ##  7  7 [visiting Friends or relatives]         106.   0.0692  
+    ##  8  6 [Other personal business]                48.3  0.0315  
+    ##  9 29 [Just go for a walk]                      8.44 0.00550 
+    ## 10  3 [Educational establishment]             116.   0.0754  
+    ## 11  5 [Visit hospital or other health]          8.9  0.00580 
+    ## 12  2 [In course of work]                      15.9  0.0104  
+    ## 13  9 [Easting/drinking other occasions]       14.1  0.00917 
+    ## 14 13 [Day trip]                                7.7  0.00501 
+    ## 15 27 [Escort - other]                          1.15 0.000749
 
 The `summary_purpose` object has coded variables which are stored as
 labelled vectors. The following code allows us to extract the labels
@@ -151,21 +154,21 @@ summary_purpose
     ## # A tibble: 15 × 3
     ##    purpose_old                            Trips    Split
     ##    <fct>                                  <dbl>    <dbl>
-    ##  1 Place of work                         909.   0.359   
-    ##  2 Shopping                              202.   0.0797  
-    ##  3 Other - not coded                      65.0  0.0256  
-    ##  4 Go home                               334.   0.132   
-    ##  5 Partcipipating in sport               419.   0.165   
-    ##  6 Entertainment/other public activities   8.76 0.00345 
-    ##  7 visiting Friends or relatives         192.   0.0756  
-    ##  8 Other personal business                89.2  0.0352  
-    ##  9 Just go for a walk                     10.0  0.00396 
-    ## 10 Educational establishment             248.   0.0980  
-    ## 11 Visit hospital or other health          8.60 0.00339 
-    ## 12 In course of work                      17.5  0.00690 
-    ## 13 Easting/drinking other occasions       18.7  0.00737 
-    ## 14 Day trip                               11.9  0.00470 
-    ## 15 Escort - other                          1.58 0.000625
+    ##  1 Place of work                         555.   0.361   
+    ##  2 Shopping                              132.   0.0858  
+    ##  3 Other - not coded                      42.1  0.0274  
+    ##  4 Go home                               188.   0.123   
+    ##  5 Partcipipating in sport               285.   0.185   
+    ##  6 Entertainment/other public activities   7.1  0.00462 
+    ##  7 visiting Friends or relatives         106.   0.0692  
+    ##  8 Other personal business                48.3  0.0315  
+    ##  9 Just go for a walk                      8.44 0.00550 
+    ## 10 Educational establishment             116.   0.0754  
+    ## 11 Visit hospital or other health          8.9  0.00580 
+    ## 12 In course of work                      15.9  0.0104  
+    ## 13 Easting/drinking other occasions       14.1  0.00917 
+    ## 14 Day trip                                7.7  0.00501 
+    ## 15 Escort - other                          1.15 0.000749
 
 ![](README_files/figure-gfm/mode_split-1.png)<!-- -->
 
@@ -173,7 +176,7 @@ Similarly, the split by year can be calculated with the following code:
 
 ``` r
 summary_purpose_year = data_bicycle |>
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(purpose_old,dyear)) |> 
   mutate(Split = Trips/sum(Trips),.by = c(dyear))
 ```
@@ -188,18 +191,18 @@ summary_purpose_year
 ```
 
     ## # A tibble: 74 × 4
-    ##    purpose_old                           dyear                 Trips   Split
-    ##    <fct>                                 <fct>                 <dbl>   <dbl>
-    ##  1 Place of work                         2014 dataset/script 153.    0.371  
-    ##  2 Shopping                              2014 dataset/script  36.0   0.0869 
-    ##  3 Other - not coded                     2014 dataset/script  34.0   0.0821 
-    ##  4 Go home                               2014 dataset/script  46.2   0.112  
-    ##  5 Partcipipating in sport               2014 dataset/script  81.0   0.196  
-    ##  6 Entertainment/other public activities 2014 dataset/script   0.72  0.00174
-    ##  7 visiting Friends or relatives         2014 dataset/script  20.0   0.0484 
-    ##  8 Other personal business               2014 dataset/script   0.488 0.00118
-    ##  9 Just go for a walk                    2014 dataset/script   1.31  0.00317
-    ## 10 Educational establishment             2014 dataset/script  38.4   0.0927 
+    ##    purpose_old                           dyear                Trips   Split
+    ##    <fct>                                 <fct>                <dbl>   <dbl>
+    ##  1 Place of work                         2014 dataset/script 102.   0.352  
+    ##  2 Shopping                              2014 dataset/script  32.3  0.112  
+    ##  3 Other - not coded                     2014 dataset/script  21.7  0.0753 
+    ##  4 Go home                               2014 dataset/script  31.7  0.110  
+    ##  5 Partcipipating in sport               2014 dataset/script  58    0.201  
+    ##  6 Entertainment/other public activities 2014 dataset/script   0.75 0.00260
+    ##  7 visiting Friends or relatives         2014 dataset/script  15.3  0.0529 
+    ##  8 Other personal business               2014 dataset/script   1.04 0.00360
+    ##  9 Just go for a walk                    2014 dataset/script   1.44 0.00499
+    ## 10 Educational establishment             2014 dataset/script  21.7  0.0753 
     ## # ℹ 64 more rows
 
 We can see how the splits for the five most common purposes have changed
@@ -212,8 +215,8 @@ top_5_purposes
 ```
 
     ## [1] Place of work             Partcipipating in sport  
-    ## [3] Go home                   Educational establishment
-    ## [5] Shopping                 
+    ## [3] Go home                   Shopping                 
+    ## [5] Educational establishment
     ## attr(,"label")
     ## [1] Purpose of journey (Old codes)
     ## 24 Levels: Not stated Place of work ... Just go for a walk
@@ -232,9 +235,10 @@ summary_purpose_year |>
   scale_y_continuous(labels = scales::percent)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- --> The high
-variation of the splits might be linked to the different samples for
-each year’s survey.
+![](README_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+The high variation of the splits might be linked to the different
+samples for each year’s survey.
 
 ## Temporal Distribution of trips
 
@@ -243,7 +247,7 @@ build an hourly profile of the trips.
 
 ``` r
 hourly_summary = data_bicycle |> 
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(journeystart_hh))
 hourly_summary
 ```
@@ -251,16 +255,16 @@ hourly_summary
     ## # A tibble: 25 × 2
     ##    journeystart_hh Trips
     ##              <dbl> <dbl>
-    ##  1               8 227. 
-    ##  2              17 271. 
-    ##  3               9 123. 
-    ##  4               6  67.7
-    ##  5               7 169. 
-    ##  6              15 240. 
-    ##  7              16 199. 
-    ##  8              12 127. 
-    ##  9              13 110. 
-    ## 10              11 106. 
+    ##  1               8 144. 
+    ##  2              17 166. 
+    ##  3               9  77.0
+    ##  4               6  37.2
+    ##  5               7 109. 
+    ##  6              15 120. 
+    ##  7              16 130. 
+    ##  8              12  80.7
+    ##  9              13  71.6
+    ## 10              11  85.8
     ## # ℹ 15 more rows
 
 The following code is used to plot the hourly trips profile.
@@ -273,12 +277,13 @@ hourly_summary |>
   theme_minimal()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- --> We can also
-produce the same analysis by trip purpose.
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+We can also produce the same analysis by trip purpose.
 
 ``` r
 hourly_summary_purpose = data_bicycle |> 
-  summarise(Trips = sum(IND_WT*trav_wt),
+  summarise(Trips = sum(trav_wt),
             .by = c(journeystart_hh,purpose_old)) |> 
   mutate(purpose_old = haven::as_factor(purpose_old))
   
@@ -288,16 +293,16 @@ hourly_summary_purpose
     ## # A tibble: 184 × 3
     ##    journeystart_hh purpose_old              Trips
     ##              <dbl> <fct>                    <dbl>
-    ##  1               8 Place of work           159.  
-    ##  2              17 Place of work           125.  
-    ##  3               9 Shopping                 12.0 
-    ##  4               6 Other - not coded         7.31
-    ##  5               7 Other - not coded         7.31
-    ##  6              15 Other - not coded         3.11
-    ##  7              16 Go home                  32.3 
-    ##  8              12 Partcipipating in sport  58.9 
-    ##  9              13 Go home                  15.7 
-    ## 10              11 Place of work            14.6 
+    ##  1               8 Place of work           102.  
+    ##  2              17 Place of work            81.2 
+    ##  3               9 Shopping                 10.3 
+    ##  4               6 Other - not coded         3.86
+    ##  5               7 Other - not coded         3.86
+    ##  6              15 Other - not coded         2.13
+    ##  7              16 Go home                  21.1 
+    ##  8              12 Partcipipating in sport  36.7 
+    ##  9              13 Go home                   8.89
+    ## 10              11 Place of work            11.0 
     ## # ℹ 174 more rows
 
 As shown in the plot below, the *commuting* and *education* trips have
@@ -351,9 +356,12 @@ TLD_mode |>
         axis.text.x = element_text(angle = 90))
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- --> \### By
-purpose The following exercise uses the `purpose_old` categories. A
-finer analysis is possible if the `purpose_new` and `purpose_new2`
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+
+### By purpose
+
+The following exercise uses the `purpose_old` categories. A finer
+analysis is possible if the `purpose_new` and `purpose_new2`
 
 ``` r
 TLD_purpose = data |>
@@ -419,6 +427,232 @@ TLD_mode_purp |>
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+
+## Annualisation factors calculation
+
+In order to estimate the trip frequency by purpose, the stage tables
+from the survey are used. The following code loads the data into the
+environment.
+
+``` r
+SPSS_files_stage = list.files(pattern = "stage.*\\.sav$",
+                        recursive = T,full.names = T)
+
+data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
+```
+
+As in the previous analysis, we are interested only in the bicycle trips
+(`mode` = `4`). Although bike might not be the main mode for all the
+trip, all bike stages are considered for this analysis. Subsequently, we
+select the columns of interest and discard duplicated records
+
+``` r
+bike_stages <- data.stage |> 
+  filter(mode == 4) |> 
+  select(UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday) |> 
+  unique()
+```
+
+Firstly, we explore the overall trip frequency splits by day of the week
+
+``` r
+bike_stages |> 
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear)) |> 
+  select(-Total) |>
+  mutate(across(c("dyear",travday),as_factor)) |> 
+  pivot_wider(names_from = dyear,values_from = Perc) |> 
+  arrange(travday) |>
+  kable(digits = 3) |> 
+  kable_classic() |>
+  as_image(width = 10,file = "README_files/figure-gfm/wday_splits.png")
+```
+
+<img src="README_files/figure-gfm/wday_splits.png" width="960" />
+
+``` r
+bike_stages |> 
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear)) |> 
+  select(-Total) |> 
+  ggplot(aes(x=haven::as_factor(dyear), y = Perc, fill = haven::as_factor(travday)))+
+  scale_y_continuous(
+    # limits = c(0,0.3),
+    labels = scales::percent)+
+  geom_col()+
+  scale_fill_viridis_d()+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 30,vjust = 1,hjust = 1))+
+  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-27-1.png)<!-- --> Since travel
+patters and frequency would vary among trip purposes, we need to produce
+a more dissagregated analysis. Thus, we first define groups of trip
+purposes from the `new_purpose` column. The following code identifies
+the different trip purposes that people logged in their trip diaries of
+the survey when using the bike.
+
+``` r
+SHS_purposes_bike <- bike_stages |>
+  select(purpose_new) |>
+  unique() |> 
+  mutate(p.label = as_factor(purpose_new))
+```
+
+, A correspondence between trip purposes for the NPT project has been
+defined as follows:
+
+``` r
+NPT_purposes_equiv <- tribble(
+  ~ purpose_new,  ~ NPT_purpose,
+  3, 'Commute',
+  103, 'Commute',
+  4, 'Shopping',
+  104, 'Shopping',
+  15, 'Workout',
+  29, 'Other',
+  129, 'Other',
+  1, 'Other',
+  115, 'Workout',
+  34, 'Social',
+  6, 'Social',
+  19, 'Workout',
+  24, 'Other',
+  106, 'Social',
+  5, 'Social',
+  105, 'Social',
+  12, 'Other',
+  112, 'Other',
+  11, 'School',
+  111, 'School',
+  30, 'Workout',
+  130, 'Workout',
+  23, 'Other',
+  123, 'Other',
+  7, 'School',
+  107, 'School',
+  2, 'Other',
+  102, 'Other',
+  36, 'Social',
+  31, 'Other',
+  131, 'Other',
+  119, 'Workout',
+  35, 'Social',
+  26, 'Social',
+  126, 'Social',
+  25, 'Social',
+  125, 'Social',
+  17, 'Other',
+  22, 'Other',
+  122, 'Other',
+  135, 'Social',
+  124, 'Other',
+  33, 'Other',
+  136, 'Social',
+  117, 'Other',
+  226, 'Social',
+  18, 'Other',
+  118, 'Other',
+  13, 'Workout',
+  113, 'Workout',
+  133, 'Other',
+  114, 'Workout',
+  134, 'Social'
+)
+```
+
+The following table shows how the `new_purpose` values have been grouped
+into 6 wider categories:
+
+``` r
+tbl_purposes <- SHS_purposes_bike |>
+  left_join(NPT_purposes_equiv,by = "purpose_new") |>
+  arrange(NPT_purpose) 
+
+kable(tbl_purposes |>
+                       select(-NPT_purpose)) |>
+  pack_rows(index = table(tbl_purposes$NPT_purpose)) |> 
+  kable_classic() |>
+  as_image(width = 10,file = "README_files/figure-gfm/purpose_table.png")
+```
+
+<img src="README_files/figure-gfm/purpose_table.png" width="960" />
+
+Based on this purposes, we can produce a plot for proportion of trips by
+day of travel
+
+``` r
+bike_stages |> 
+left_join(NPT_purposes_equiv,by = "purpose_new") |>    
+  summarise(Total = sum(trav_wt,na.rm = T),
+            .by = c(dyear,travday,NPT_purpose)) |> 
+  mutate(Perc = Total/sum(Total),
+         .by = c(dyear,NPT_purpose)) |> 
+  select(-Total) |> 
+  ggplot(aes(x=haven::as_factor(dyear), y = Perc, fill = haven::as_factor(travday)))+
+  scale_y_continuous(
+    # limits = c(0,0.3),
+    labels = scales::percent)+
+  geom_col()+
+  facet_wrap(NPT_purpose~.)+
+  scale_fill_viridis_d()+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 30,vjust = 1,hjust = 1))+
+  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- --> In order to
+produce the annualisation factors, we have to estimate the trip
+frequency by purpose from the survey. First the number of trips by day
+of the week is calculated for each respondent of the survey. Then, we
+calculated the weighted mean and median across all respondents using the
+travel diary weight (`trav_wt`). This calculations are applied for each
+category of the NTP purposes.
+
+``` r
+purpose_factors = bike_stages |>
+  left_join(NPT_purposes_equiv,by = "purpose_new") |> 
+  summarise(N_trips = n(),
+            .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
+  # mutate(N_trips_weighted = N_trips*trav_wt) |> 
+  summarise(N_trips_mean = weighted.mean(N_trips,trav_wt),
+            N_trips_median=matrixStats::weightedMedian(N_trips,trav_wt),
+            .by = c(travday,NPT_purpose)) |> 
+  mutate(wd.type = case_when(travday<6~"weekday",
+                            travday==6~"saturday",
+                            TRUE~"sunday/bankholiday"))
+```
+
+In order to consider the different weights of each type of day in a year
+i.e., the total number of Mondays, Tuesdays, etc; days are grouped into
+weekdays, Saturdays and Sundays/bank holidays. Finally, assuming that
+every year in Scotland has 250 weekdays, 52 Saturdays and 63
+Sundays/Bank holidays, we calculate the annualisation factor for each
+trip purpose.
+
+``` r
+purpose_factors_dtype = purpose_factors |>
+  summarise(across(c(N_trips_mean,N_trips_median),
+                   mean),
+            .by = c(wd.type,NPT_purpose)) |> 
+  mutate(wd.wt = case_when(wd.type=="weekday"~250,
+                           wd.type=="saturday"~52,
+                           wd.type=="sunday/bankholiday"~63)) |> 
+  summarise(factor_AADT = weighted.mean(N_trips_mean,wd.wt),
+            .by = NPT_purpose)
+
+purpose_factors_dtype |> 
+  kbl(digits=4) |>
+  kable_classic_2() |>
+  as_image(width = 10,file = "README_files/figure-gfm/AADT_factors.png")
+```
+
+<img src="README_files/figure-gfm/AADT_factors.png" width="960" />
 
 <div id="refs" class="references csl-bib-body">
 
