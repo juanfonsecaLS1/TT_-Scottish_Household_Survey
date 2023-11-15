@@ -430,6 +430,8 @@ TLD_mode_purp |>
 
 ## Annualisation factors calculation
 
+### Bike baseline
+
 In order to estimate the trip frequency by purpose, the stage tables
 from the survey are used. The following code loads the data into the
 environment.
@@ -514,55 +516,55 @@ NPT_purposes_equiv <- tribble(
   103, 'Commute',
   4, 'Shopping',
   104, 'Shopping',
-  15, 'Workout',
+  15, 'Leuisure',
   29, 'Other',
   129, 'Other',
   1, 'Other',
-  115, 'Workout',
-  34, 'Social',
-  6, 'Social',
-  19, 'Workout',
+  115, 'Leuisure',
+  34, 'Leuisure',
+  6, 'Visiting',
+  19, 'Leuisure',
   24, 'Other',
-  106, 'Social',
-  5, 'Social',
-  105, 'Social',
+  106, 'Visiting',
+  5, 'Visiting',
+  105, 'Visiting',
   12, 'Other',
   112, 'Other',
   11, 'School',
   111, 'School',
-  30, 'Workout',
-  130, 'Workout',
+  30, 'Leuisure',
+  130, 'Leuisure',
   23, 'Other',
   123, 'Other',
   7, 'School',
   107, 'School',
   2, 'Other',
   102, 'Other',
-  36, 'Social',
+  36, 'Leuisure',
   31, 'Other',
   131, 'Other',
-  119, 'Workout',
-  35, 'Social',
-  26, 'Social',
-  126, 'Social',
-  25, 'Social',
-  125, 'Social',
+  119, 'Leuisure',
+  35, 'Leuisure',
+  26, 'Leuisure',
+  126, 'Leuisure',
+  25, 'Leuisure',
+  125, 'Leuisure',
   17, 'Other',
   22, 'Other',
   122, 'Other',
-  135, 'Social',
+  135, 'Leuisure',
   124, 'Other',
   33, 'Other',
-  136, 'Social',
+  136, 'Leuisure',
   117, 'Other',
-  226, 'Social',
-  18, 'Other',
-  118, 'Other',
-  13, 'Workout',
-  113, 'Workout',
+  226, 'Leuisure',
+  18, 'Leuisure',
+  118, 'Leuisure',
+  13, 'Leuisure',
+  113, 'Leuisure',
   133, 'Other',
-  114, 'Workout',
-  134, 'Social'
+  114, 'Leuisure',
+  134, 'Leuisure'
 )
 ```
 
@@ -646,13 +648,67 @@ purpose_factors_dtype = purpose_factors |>
   summarise(factor_AADT = weighted.mean(N_trips_mean,wd.wt),
             .by = NPT_purpose)
 
-purpose_factors_dtype |> 
-  kbl(digits=4) |>
-  kable_classic_2() |>
-  as_image(width = 10,file = "README_files/figure-gfm/AADT_factors.png")
+# purpose_factors_dtype |> 
+#   kbl(digits=4) |>
+#   kable_classic_2() |>
+#   as_image(width = 10,file = "README_files/figure-gfm/AADT_factors.png")
+
+purpose_factors_dtype 
 ```
 
-<img src="README_files/figure-gfm/AADT_factors.png" width="960" />
+    ## # A tibble: 6 × 2
+    ##   NPT_purpose factor_AADT
+    ##   <chr>             <dbl>
+    ## 1 Commute            1.74
+    ## 2 Shopping           1.53
+    ## 3 Leuisure           1.61
+    ## 4 Other              1.26
+    ## 5 Visiting           1.61
+    ## 6 School             1.59
+
+### All modes AADT
+
+A similar analysis is undertaken for all modes to estimate the trip
+frequency across all modes for different purposes
+
+``` r
+all_mode_factor = data.stage |>
+  filter(mode < 9) |> 
+  select(UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday) |> 
+  unique() |>
+  left_join(NPT_purposes_equiv,by = "purpose_new") |>
+  drop_na() |> 
+  summarise(N_trips = n(),
+            .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
+  summarise(N_trips_mean = weighted.mean(N_trips,trav_wt,na.rm = T),
+            N_trips_median=matrixStats::weightedMedian(N_trips,trav_wt,na.rm = T),
+            .by = c(travday,NPT_purpose)) |> 
+  mutate(wd.type = case_when(travday<6~"weekday",
+                            travday==6~"saturday",
+                            TRUE~"sunday/bankholiday")) |>
+  summarise(across(c(N_trips_mean,N_trips_median),
+                   mean),
+            .by = c(wd.type,NPT_purpose)) |> 
+  mutate(wd.wt = case_when(wd.type=="weekday"~250,
+                           wd.type=="saturday"~52,
+                           wd.type=="sunday/bankholiday"~63)) |> 
+  summarise(factor_AADT = weighted.mean(N_trips_mean,wd.wt),
+            .by = NPT_purpose)
+
+all_mode_factor
+```
+
+    ## # A tibble: 6 × 2
+    ##   NPT_purpose factor_AADT
+    ##   <chr>             <dbl>
+    ## 1 Other              1.59
+    ## 2 Commute            1.81
+    ## 3 Leuisure           1.62
+    ## 4 Shopping           1.66
+    ## 5 Visiting           1.51
+    ## 6 School             1.67
+
+## References
 
 <div id="refs" class="references csl-bib-body">
 
