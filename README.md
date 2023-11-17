@@ -450,14 +450,15 @@ select the columns of interest and discard duplicated records
 
 ``` r
 bike_stages <- data.stage |> 
-  filter(mode == 4) |> 
-  select(UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday)
+  filter(sum(mode == 4)>0,.by = c(UNIQIDNEW,dyear,trav_wt,travday)) |> 
+  select(mode,UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday)
 ```
 
 Firstly, we explore the overall trip frequency splits by day of the week
 
 ``` r
 bike_stages |> 
+  filter(mode ==4) |> 
   summarise(Total = sum(trav_wt,na.rm = T),
             .by = c(dyear,travday)) |> 
   mutate(Perc = Total/sum(Total),
@@ -478,6 +479,7 @@ bike_stages |>
 
 ``` r
 bike_stages |> 
+  filter(mode ==4) |> 
   summarise(Total = sum(trav_wt,na.rm = T),
             .by = c(dyear,travday)) |> 
   mutate(Perc = Total/sum(Total),
@@ -595,6 +597,7 @@ day of travel for each dataset
 
 ``` r
 bike_stages |> 
+  filter(mode ==4) |>
 left_join(NPT_purposes_equiv,by = "purpose_new") |>    
   summarise(Total = sum(trav_wt,na.rm = T),
             .by = c(dyear,travday,NPT_purpose)) |> 
@@ -620,6 +623,7 @@ visualised with the following code
 
 ``` r
 bike_stages |> 
+  filter(mode ==4)|> 
 left_join(NPT_purposes_equiv,by = "purpose_new") |>    
   summarise(Total = sum(trav_wt,na.rm = T),
             .by = c(travday,NPT_purpose)) |> 
@@ -642,6 +646,7 @@ left_join(NPT_purposes_equiv,by = "purpose_new") |>
 
 ``` r
 bike_stages |> 
+  filter(mode ==4) |> 
 left_join(NPT_purposes_equiv,by = "purpose_new") |>    
   summarise(Total = sum(trav_wt,na.rm = T),
             .by = c(travday,NPT_purpose)) |> 
@@ -657,7 +662,7 @@ left_join(NPT_purposes_equiv,by = "purpose_new") |>
   scale_fill_brewer(palette = "Set2")+
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 30,vjust = 1,hjust = 1))+
-  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel")
+  labs(x= "year/dataset",y=NULL,fill = "Day",title = "Portion of trips by day of travel made by bike")
 ```
 
 ![](README_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
@@ -670,41 +675,44 @@ weight (`trav_wt`). This calculations are applied by each category of
 the NTP purposes.
 
 ``` r
-purpose_trips_bike_BL = bike_stages |>
+purpose_trips_bike_BL = bike_stages |> 
+  filter(mode ==4) |>
   left_join(NPT_purposes_equiv,by = "purpose_new") |> 
   summarise(N_trips = n(),
             .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
-  summarise(N_trips = sum(N_trips*trav_wt),
+  summarise(N_trips = sum(N_trips*trav_wt,na.rm = T),
             .by = c(dyear,NPT_purpose,travday))
 
 total_respondents_bike_BL = bike_stages |>
   select(dyear,UNIQIDNEW,trav_wt,travday) |> 
   unique() |> 
-  summarise(N_ind = sum(trav_wt),
+  summarise(N_ind = sum(trav_wt,na.rm = T),
             .by = c(dyear,travday))
 
-purpose_trips_bike_BL |> 
+N_bar_daily_BL = purpose_trips_bike_BL |> 
   left_join(total_respondents_bike_BL,
             by=join_by(dyear,travday)) |> 
   mutate(N_bar = N_trips/N_ind) |> 
-  summarise(across(N_bar,mean),.by = c(NPT_purpose,travday)) |> 
+  summarise(across(N_bar,mean,na.rm = T),.by = c(NPT_purpose,travday)) |> 
   arrange(NPT_purpose,travday)
+
+N_bar_daily_BL |>
+  pivot_wider(names_from = NPT_purpose,
+              values_from = N_bar,
+              values_fill = 0) |>
+  arrange(travday)
 ```
 
-    ## # A tibble: 41 × 3
-    ##    NPT_purpose travday        N_bar
-    ##    <chr>       <dbl+lbl>      <dbl>
-    ##  1 Commute     1 [Monday]    0.947 
-    ##  2 Commute     2 [Tuesday]   0.855 
-    ##  3 Commute     3 [Wednesday] 0.870 
-    ##  4 Commute     4 [Thursday]  0.972 
-    ##  5 Commute     5 [Friday]    1.00  
-    ##  6 Commute     6 [Saturday]  0.279 
-    ##  7 Commute     7 [Sunday]    0.463 
-    ##  8 Leisure     1 [Monday]    0.0851
-    ##  9 Leisure     2 [Tuesday]   0.101 
-    ## 10 Leisure     3 [Wednesday] 0.157 
-    ## # ℹ 31 more rows
+    ## # A tibble: 7 × 7
+    ##   travday       Commute Leisure Other School Shopping Visiting
+    ##   <dbl+lbl>       <dbl>   <dbl> <dbl>  <dbl>    <dbl>    <dbl>
+    ## 1 1 [Monday]      0.947  0.0851 0.675  0.167    0.116   0.214 
+    ## 2 2 [Tuesday]     0.855  0.101  0.755  0.327    0.151   0.122 
+    ## 3 3 [Wednesday]   0.870  0.157  0.774  0.125    0.247   0.159 
+    ## 4 4 [Thursday]    0.972  0.0461 0.924  0.380    0.126   0.0866
+    ## 5 5 [Friday]      1.00   0.0556 0.633  0.361    0.184   0.270 
+    ## 6 6 [Saturday]    0.279  0.0841 1.27   0        0.412   0.420 
+    ## 7 7 [Sunday]      0.463  0.193  1.04   0.243    0.297   0.128
 
 In order to consider the different weights of each type of day in a year
 i.e., the total number of Mondays, Tuesdays, etc; days are grouped into
@@ -714,23 +722,29 @@ Sundays/Bank holidays, we calculate the annualisation factor for each
 trip purpose.
 
 ``` r
-# purpose_factors_dtype = purpose_factors |>
-#   summarise(across(c(N_trips_mean,N_trips_median),
-#                    mean),
-#             .by = c(wd.type,NPT_purpose)) |> 
-#   mutate(wd.wt = case_when(wd.type=="weekday"~250,
-#                            wd.type=="saturday"~52,
-#                            wd.type=="sunday/bankholiday"~63)) |> 
-#   summarise(factor_AADT = weighted.mean(N_trips_mean,wd.wt),
-#             .by = NPT_purpose)
-# 
-# # purpose_factors_dtype |> 
-# #   kbl(digits=4) |>
-# #   kable_classic_2() |>
-# #   as_image(width = 10,file = "README_files/figure-gfm/AADT_factors.png")
-# 
-# purpose_factors_dtype |> arrange(NPT_purpose)
+AADT_factors_bike_BL <- N_bar_daily_BL |>
+  mutate(d.weight = case_when(travday < 6 ~ 50,
+                              travday == 6 ~ 52,
+                              travday == 7 ~ 63)) |>
+  summarise(AADT_bike = weighted.mean(N_bar, w = d.weight),
+            .by = NPT_purpose)
+
+AADT_factors_bike_BL |>
+  mutate(weekly_trips = AADT_bike*7)
 ```
+
+    ## # A tibble: 6 × 3
+    ##   NPT_purpose AADT_bike weekly_trips
+    ##   <chr>           <dbl>        <dbl>
+    ## 1 Commute         0.756        5.29 
+    ## 2 Leisure         0.106        0.744
+    ## 3 Other           0.875        6.12 
+    ## 4 School          0.266        1.86 
+    ## 5 Shopping        0.223        1.56 
+    ## 6 Visiting        0.199        1.39
+
+***NOTE:*** The commute trip rate is normalised for all adult population
+i.e., employed + unemployed.
 
 ### All modes AADT
 
@@ -740,6 +754,7 @@ frequency across all modes for different purposes
 ``` r
 purpose_trips_all = data.stage |>
   left_join(NPT_purposes_equiv,by = "purpose_new") |> 
+  mutate(NPT_purpose = if_else(is.na(NPT_purpose),"Other",NPT_purpose)) |> 
   summarise(N_trips = n(),
             .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
   summarise(N_trips = sum(N_trips*trav_wt,na.rm = T),
@@ -751,28 +766,252 @@ total_respondents_all = data.stage |>
   summarise(N_ind = sum(trav_wt,na.rm = T),
             .by = c(dyear,travday))
 
-purpose_trips_all |> 
+N_bar_daily_all = purpose_trips_all |> 
   left_join(total_respondents_all,
             by=join_by(dyear,travday)) |> 
   mutate(N_bar = N_trips/N_ind) |> 
   summarise(across(N_bar,mean,na.rm = T),.by = c(NPT_purpose,travday)) |> 
   arrange(NPT_purpose,travday)
+
+N_bar_daily_all |>
+  pivot_wider(names_from = NPT_purpose,
+              values_from = N_bar,
+              values_fill = 0) |>
+  arrange(travday)
 ```
 
-    ## # A tibble: 49 × 3
-    ##    NPT_purpose travday       N_bar
-    ##    <chr>       <dbl+lbl>     <dbl>
-    ##  1 Commute     1 [Monday]    0.754
-    ##  2 Commute     2 [Tuesday]   0.784
-    ##  3 Commute     3 [Wednesday] 0.803
-    ##  4 Commute     4 [Thursday]  0.799
-    ##  5 Commute     5 [Friday]    0.803
-    ##  6 Commute     6 [Saturday]  0.240
-    ##  7 Commute     7 [Sunday]    0.231
-    ##  8 Leisure     1 [Monday]    0.174
-    ##  9 Leisure     2 [Tuesday]   0.157
-    ## 10 Leisure     3 [Wednesday] 0.172
-    ## # ℹ 39 more rows
+    ## # A tibble: 7 × 7
+    ##   travday       Commute Leisure Other School Shopping Visiting
+    ##   <dbl+lbl>       <dbl>   <dbl> <dbl>  <dbl>    <dbl>    <dbl>
+    ## 1 1 [Monday]      0.754   0.174 0.865 0.211     0.541    0.210
+    ## 2 2 [Tuesday]     0.784   0.157 0.884 0.209     0.509    0.207
+    ## 3 3 [Wednesday]   0.803   0.172 0.898 0.209     0.511    0.206
+    ## 4 4 [Thursday]    0.799   0.170 0.898 0.209     0.513    0.216
+    ## 5 5 [Friday]      0.803   0.191 0.901 0.195     0.561    0.259
+    ## 6 6 [Saturday]    0.240   0.274 0.882 0.0140    0.902    0.367
+    ## 7 7 [Sunday]      0.231   0.301 0.968 0.0178    0.648    0.413
+
+``` r
+AADT_factors_all <- N_bar_daily_all |>
+  mutate(d.weight = case_when(travday < 6 ~ 50,
+                              travday == 6 ~ 52,
+                              travday == 7 ~ 63)) |>
+  summarise(AADT_all = weighted.mean(N_bar, w = d.weight),
+            .by = NPT_purpose)
+
+AADT_factors_all |>
+  mutate(weekly_trips = AADT_all*7)
+```
+
+    ## # A tibble: 6 × 3
+    ##   NPT_purpose AADT_all weekly_trips
+    ##   <chr>          <dbl>        <dbl>
+    ## 1 Commute        0.614         4.30
+    ## 2 Leisure        0.209         1.46
+    ## 3 Other          0.902         6.31
+    ## 4 School         0.147         1.03
+    ## 5 Shopping       0.601         4.21
+    ## 6 Visiting       0.274         1.92
+
+***NOTE:*** The commute trip rate is normalised for all adult population
+i.e., employed + unemployed.
+
+### Commute
+
+The same approach as in the previous section is followed for the
+commuting trips, the only difference is that in this case only the
+employed population is considered.
+
+#### Bike BL commute
+
+``` r
+bike_stages_employed <- data.stage |>
+  filter(between(randecon, 1, 3) | randecon == 9) |>
+  filter(sum(mode == 4) > 0,
+         .by = c(UNIQIDNEW, dyear, trav_wt, travday)) |>
+  select(mode,UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday)
+```
+
+``` r
+purpose_trips_bike_BL_employed = bike_stages_employed |>
+  filter(mode == 4) |>
+  left_join(NPT_purposes_equiv, by = "purpose_new") |>
+  filter(NPT_purpose == "Commute") |>
+  summarise(
+    N_trips = n(),
+    .by = c(dyear, travday, UNIQIDNEW, NPT_purpose, trav_wt)
+  ) |>
+  summarise(
+    N_trips = sum(N_trips * trav_wt, na.rm = T),
+    .by = c(dyear, NPT_purpose, travday)
+  )
+
+total_respondents_bike_BL_employed = bike_stages_employed |>
+  select(dyear, UNIQIDNEW, trav_wt, travday) |>
+  unique() |>
+  summarise(N_ind = sum(trav_wt, na.rm = T),
+            .by = c(dyear, travday))
+
+N_bar_daily_BL_employed = purpose_trips_bike_BL_employed |>
+  left_join(total_respondents_bike_BL,
+            by = join_by(dyear, travday)) |>
+  mutate(N_bar = N_trips / N_ind) |>
+  summarise(across(N_bar, mean, na.rm = T), .by = c(NPT_purpose, travday)) |>
+  arrange(NPT_purpose, travday)
+
+N_bar_daily_BL_employed |>
+  pivot_wider(names_from = NPT_purpose,
+              values_from = N_bar,
+              values_fill = 0) |>
+  arrange(travday)
+```
+
+    ## # A tibble: 7 × 2
+    ##   travday       Commute
+    ##   <dbl+lbl>       <dbl>
+    ## 1 1 [Monday]      0.944
+    ## 2 2 [Tuesday]     0.795
+    ## 3 3 [Wednesday]   0.891
+    ## 4 4 [Thursday]    0.884
+    ## 5 5 [Friday]      1.10 
+    ## 6 6 [Saturday]    0.289
+    ## 7 7 [Sunday]      0.359
+
+``` r
+AADT_factors_bike_BL_employed <- N_bar_daily_BL_employed |>
+  mutate(d.weight = case_when(travday < 6 ~ 50,
+                              travday == 6 ~ 52,
+                              travday == 7 ~ 63)) |>
+  summarise(AADT_bike = weighted.mean(N_bar, w = d.weight),
+            .by = NPT_purpose)
+
+AADT_factors_bike_BL_employed |>
+  mutate(weekly_trips = AADT_bike*7)
+```
+
+    ## # A tibble: 1 × 3
+    ##   NPT_purpose AADT_bike weekly_trips
+    ##   <chr>           <dbl>        <dbl>
+    ## 1 Commute         0.735         5.14
+
+#### All modes commute
+
+``` r
+Commute_trips_employed = data.stage |>
+  filter(between(randecon, 1, 3) | randecon == 9) |>
+  left_join(NPT_purposes_equiv, by = "purpose_new") |>
+  filter(NPT_purpose == "Commute") |>
+  summarise(
+    N_trips = n(),
+    .by = c(dyear,
+            travday,
+            UNIQIDNEW,
+            NPT_purpose, trav_wt)
+  ) |>
+  summarise(
+    N_trips = sum(N_trips * trav_wt, na.rm = T),
+    .by = c(dyear, NPT_purpose, travday)
+  )
+
+total_respondents_all = data.stage |>
+  filter(between(randecon, 1, 3) | randecon == 9) |>
+  select(dyear, UNIQIDNEW, trav_wt, travday) |>
+  unique() |>
+  summarise(N_ind = sum(trav_wt, na.rm = T),
+            .by = c(dyear, travday))
+
+N_bar_daily_employed = Commute_trips_employed |>
+  left_join(total_respondents_all,
+            by = join_by(dyear, travday)) |>
+  mutate(N_bar = N_trips / N_ind) |>
+  summarise(across(N_bar, mean, na.rm = T),
+            .by = c(NPT_purpose, travday)) |>
+  arrange(NPT_purpose, travday)
+
+N_bar_daily_employed |>
+  pivot_wider(names_from = NPT_purpose,
+              values_from = N_bar,
+              values_fill = 0) |>
+  arrange(travday)
+```
+
+    ## # A tibble: 7 × 2
+    ##   travday       Commute
+    ##   <dbl+lbl>       <dbl>
+    ## 1 1 [Monday]      1.19 
+    ## 2 2 [Tuesday]     1.25 
+    ## 3 3 [Wednesday]   1.28 
+    ## 4 4 [Thursday]    1.28 
+    ## 5 5 [Friday]      1.30 
+    ## 6 6 [Saturday]    0.358
+    ## 7 7 [Sunday]      0.337
+
+``` r
+AADT_factors_employed <- N_bar_daily_employed |>
+  mutate(d.weight = case_when(travday < 6 ~ 50,
+                              travday == 6 ~ 52,
+                              travday == 7 ~ 63)) |>
+  summarise(AADT_all = weighted.mean(N_bar, w = d.weight),
+            .by = NPT_purpose)
+
+AADT_factors_employed |>
+  mutate(weekly_trips = AADT_all*7)
+```
+
+    ## # A tibble: 1 × 3
+    ##   NPT_purpose AADT_all weekly_trips
+    ##   <chr>          <dbl>        <dbl>
+    ## 1 Commute        0.973         6.81
+
+### Preparation of output file
+
+This prepares the output file to be used in the main NPT project
+
+``` r
+AADT_output <- bind_rows(AADT_factors_employed,
+          AADT_factors_all |>
+            filter(NPT_purpose!="Commute")) |> 
+  left_join(bind_rows(AADT_factors_bike_BL_employed,
+          AADT_factors_bike_BL |>
+            filter(NPT_purpose!="Commute"))) |> 
+  mutate(across(starts_with("AADT"),list(total = \(x) x*7))) |> 
+  rename_with(.fn = ~str_replace(.x,"^AADT","Weekly"),.cols = ends_with("total"))
+
+write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
+
+AADT_output |> 
+  kable(digits = 4) |>
+  kable_classic_2(full_width= F) |> 
+  as_image("README_files/figure-gfm/AADT_final.png",width = 6)
+```
+
+<img src="../../../../AppData/Local/Temp/RtmpekdqQC/file265c33f16693.png" width="576" />
+
+Committing the changes
+
+``` r
+library(git2r)
+repo <- repository("../npt/")
+PAT <- cred_token()
+
+if(length(status(repo)[["unstaged"]])>0) {
+  add(repo, path = "data-raw/AADT_factors.csv")
+  commit(repo, "Update AADT factors")
+  push(repo, credentials = PAT)
+}
+```
+
+The total trips per day and week are summarised with the following code
+
+``` r
+AADT_output |> 
+  summarise(across(where(is.numeric),sum))
+```
+
+    ## # A tibble: 1 × 4
+    ##   AADT_all AADT_bike Weekly_all_total Weekly_bike_total
+    ##      <dbl>     <dbl>            <dbl>             <dbl>
+    ## 1     3.10      2.40             21.7              16.8
 
 ## References
 
