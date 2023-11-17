@@ -294,7 +294,7 @@ data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
 
 ### Bike baseline
 
-As in the previous analysis, we are interested only in the bicycle trips (`mode` = `4`). Although bike might not be the main mode for all the trip, all bike stages are considered for this analysis. Subsequently, we select the columns of interest and discard duplicated records
+As in the previous analysis, we are interested only in the bicycle trips (`mode` = `4`). Although bike might not be the main mode for all the trip, all bike stages are considered for this analysis. Subsequently, we select the columns of interest 
 
 ```{r}
 bike_stages <- data.stage |> 
@@ -722,7 +722,7 @@ write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
 AADT_output |> 
   kable(digits = 4) |>
   kable_classic_2(full_width= F) |> 
-  as_image("README_files/figure-gfm/AADT_final.png",width = 6)
+  as_image(file = "README_files/figure-gfm/AADT_final.png",width = 6)
 ```
 
 Committing the changes
