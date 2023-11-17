@@ -446,7 +446,7 @@ data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
 As in the previous analysis, we are interested only in the bicycle trips
 (`mode` = `4`). Although bike might not be the main mode for all the
 trip, all bike stages are considered for this analysis. Subsequently, we
-select the columns of interest and discard duplicated records
+select the columns of interest
 
 ``` r
 bike_stages <- data.stage |> 
@@ -979,22 +979,27 @@ AADT_output <- bind_rows(AADT_factors_employed,
 
 write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
 
-AADT_output |> 
-  kable(digits = 4) |>
-  kable_classic_2(full_width= F) |> 
-  as_image("README_files/figure-gfm/AADT_final.png",width = 6)
+AADT_output
 ```
 
-<img src="../../../../AppData/Local/Temp/Rtmp86KFvm/file1bb02d1b8ac.png" width="576" />
+    ## # A tibble: 6 × 5
+    ##   NPT_purpose AADT_all AADT_bike Weekly_all_total Weekly_bike_total
+    ##   <chr>          <dbl>     <dbl>            <dbl>             <dbl>
+    ## 1 Commute        0.973     0.735             6.81             5.14 
+    ## 2 Leisure        0.209     0.106             1.46             0.744
+    ## 3 Other          0.902     0.875             6.31             6.12 
+    ## 4 School         0.147     0.266             1.03             1.86 
+    ## 5 Shopping       0.601     0.223             4.21             1.56 
+    ## 6 Visiting       0.274     0.199             1.92             1.39
 
 Committing the changes
 
 ``` r
 library(git2r)
 repo <- repository("../npt/")
-PAT <- cred_token()
 
 if(length(status(repo)[["unstaged"]])>0) {
+  PAT <- cred_token()
   add(repo, path = "data-raw/AADT_factors.csv")
   commit(repo, "Update AADT factors")
   push(repo, credentials = PAT)

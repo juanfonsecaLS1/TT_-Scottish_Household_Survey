@@ -294,7 +294,7 @@ data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
 
 ### Bike baseline
 
-As in the previous analysis, we are interested only in the bicycle trips (`mode` = `4`). Although bike might not be the main mode for all the trip, all bike stages are considered for this analysis. Subsequently, we select the columns of interest 
+As in the previous analysis, we are interested only in the bicycle trips (`mode` = `4`). Although bike might not be the main mode for all the trip, all bike stages are considered for this analysis. Subsequently, we select the columns of interest
 
 ```{r}
 bike_stages <- data.stage |> 
@@ -588,12 +588,12 @@ AADT_factors_all <- N_bar_daily_all |>
 AADT_factors_all |>
   mutate(weekly_trips = AADT_all*7)
 ```
+
 ***NOTE:*** The commute trip rate is normalised for all adult population i.e., employed + unemployed.
 
 ### Commute
 
-The same approach as in the previous section is followed for the commuting trips, the only difference
-is that in this case only the employed population is considered.
+The same approach as in the previous section is followed for the commuting trips, the only difference is that in this case only the employed population is considered.
 
 #### Bike BL commute
 
@@ -705,8 +705,11 @@ AADT_factors_employed <- N_bar_daily_employed |>
 AADT_factors_employed |>
   mutate(weekly_trips = AADT_all*7)
 ```
+
 ### Preparation of output file
+
 This prepares the output file to be used in the main NPT project
+
 ```{r}
 AADT_output <- bind_rows(AADT_factors_employed,
           AADT_factors_all |>
@@ -719,19 +722,17 @@ AADT_output <- bind_rows(AADT_factors_employed,
 
 write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
 
-AADT_output |> 
-  kable(digits = 4) |>
-  kable_classic_2(full_width= F) |> 
-  as_image(file = "README_files/figure-gfm/AADT_final.png",width = 6)
+AADT_output
 ```
 
 Committing the changes
+
 ```{r}
 library(git2r)
 repo <- repository("../npt/")
-PAT <- cred_token()
 
 if(length(status(repo)[["unstaged"]])>0) {
+  PAT <- cred_token()
   add(repo, path = "data-raw/AADT_factors.csv")
   commit(repo, "Update AADT factors")
   push(repo, credentials = PAT)
@@ -744,6 +745,5 @@ The total trips per day and week are summarised with the following code
 AADT_output |> 
   summarise(across(where(is.numeric),sum))
 ```
-
 
 ## References
