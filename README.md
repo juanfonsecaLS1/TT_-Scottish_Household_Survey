@@ -523,11 +523,11 @@ NPT_purposes_equiv <- tribble(
   103, 'Commute',
   4, 'Shopping',
   104, 'Shopping',
-  15, 'Other',
+  15, 'Recreational Cycling',
   29, 'Other',
   129, 'Other',
   1, 'Other',
-  115, 'Other',
+  115, 'Recreational Cycling',
   34, 'Leisure',
   6, 'Visiting',
   19, 'Other',
@@ -587,10 +587,11 @@ kable(tbl_purposes |>
                        select(-NPT_purpose)) |>
   pack_rows(index = table(tbl_purposes$NPT_purpose)) |> 
   kable_classic(full_width = F) |>
-  as_image(width = 6,file = "README_files/figure-gfm/purpose_table.png")
+  as_image(width = 3,
+           file = "README_files/figure-gfm/purpose_table.png")
 ```
 
-<img src="README_files/figure-gfm/purpose_table.png" width="576" />
+<img src="README_files/figure-gfm/purpose_table.png" width="288" />
 
 Based on this purposes, we can produce a plot for proportion of trips by
 day of travel for each dataset
@@ -703,16 +704,16 @@ N_bar_daily_BL |>
   arrange(travday)
 ```
 
-    ## # A tibble: 7 × 7
-    ##   travday       Commute Leisure Other School Shopping Visiting
-    ##   <dbl+lbl>       <dbl>   <dbl> <dbl>  <dbl>    <dbl>    <dbl>
-    ## 1 1 [Monday]      0.947  0.0851 0.675  0.167    0.116   0.214 
-    ## 2 2 [Tuesday]     0.855  0.101  0.755  0.327    0.151   0.122 
-    ## 3 3 [Wednesday]   0.870  0.157  0.774  0.125    0.247   0.159 
-    ## 4 4 [Thursday]    0.972  0.0461 0.924  0.380    0.126   0.0866
-    ## 5 5 [Friday]      1.00   0.0556 0.633  0.361    0.184   0.270 
-    ## 6 6 [Saturday]    0.279  0.0841 1.27   0        0.412   0.420 
-    ## 7 7 [Sunday]      0.463  0.193  1.04   0.243    0.297   0.128
+    ## # A tibble: 7 × 8
+    ##   travday  Commute Leisure Other `Recreational Cycling` School Shopping Visiting
+    ##   <dbl+lb>   <dbl>   <dbl> <dbl>                  <dbl>  <dbl>    <dbl>    <dbl>
+    ## 1 1 [Mond…   0.947  0.0851 0.444                  0.231  0.167    0.116   0.214 
+    ## 2 2 [Tues…   0.855  0.101  0.505                  0.251  0.327    0.151   0.122 
+    ## 3 3 [Wedn…   0.870  0.157  0.409                  0.365  0.125    0.247   0.159 
+    ## 4 4 [Thur…   0.972  0.0461 0.626                  0.298  0.380    0.126   0.0866
+    ## 5 5 [Frid…   1.00   0.0556 0.489                  0.144  0.361    0.184   0.270 
+    ## 6 6 [Satu…   0.279  0.0841 0.937                  0.398  0        0.412   0.420 
+    ## 7 7 [Sund…   0.463  0.193  0.543                  0.492  0.243    0.297   0.128
 
 In order to consider the different weights of each type of day in a year
 i.e., the total number of Mondays, Tuesdays, etc; days are grouped into
@@ -733,15 +734,16 @@ AADT_factors_bike_BL |>
   mutate(weekly_trips = AADT_bike*7)
 ```
 
-    ## # A tibble: 6 × 3
-    ##   NPT_purpose AADT_bike weekly_trips
-    ##   <chr>           <dbl>        <dbl>
-    ## 1 Commute         0.756        5.29 
-    ## 2 Leisure         0.106        0.744
-    ## 3 Other           0.875        6.12 
-    ## 4 School          0.266        1.86 
-    ## 5 Shopping        0.223        1.56 
-    ## 6 Visiting        0.199        1.39
+    ## # A tibble: 7 × 3
+    ##   NPT_purpose          AADT_bike weekly_trips
+    ##   <chr>                    <dbl>        <dbl>
+    ## 1 Commute                  0.756        5.29 
+    ## 2 Leisure                  0.106        0.744
+    ## 3 Other                    0.566        3.96 
+    ## 4 Recreational Cycling     0.318        2.23 
+    ## 5 School                   0.266        1.86 
+    ## 6 Shopping                 0.223        1.56 
+    ## 7 Visiting                 0.199        1.39
 
 ***NOTE:*** The commute trip rate is normalised for all adult population
 i.e., employed + unemployed.
@@ -780,16 +782,16 @@ N_bar_daily_all |>
   arrange(travday)
 ```
 
-    ## # A tibble: 7 × 7
-    ##   travday       Commute Leisure Other School Shopping Visiting
-    ##   <dbl+lbl>       <dbl>   <dbl> <dbl>  <dbl>    <dbl>    <dbl>
-    ## 1 1 [Monday]      0.754   0.174 0.865 0.211     0.541    0.210
-    ## 2 2 [Tuesday]     0.784   0.157 0.884 0.209     0.509    0.207
-    ## 3 3 [Wednesday]   0.803   0.172 0.898 0.209     0.511    0.206
-    ## 4 4 [Thursday]    0.799   0.170 0.898 0.209     0.513    0.216
-    ## 5 5 [Friday]      0.803   0.191 0.901 0.195     0.561    0.259
-    ## 6 6 [Saturday]    0.240   0.274 0.882 0.0140    0.902    0.367
-    ## 7 7 [Sunday]      0.231   0.301 0.968 0.0178    0.648    0.413
+    ## # A tibble: 7 × 8
+    ##   travday  Commute Leisure Other `Recreational Cycling` School Shopping Visiting
+    ##   <dbl+lb>   <dbl>   <dbl> <dbl>                  <dbl>  <dbl>    <dbl>    <dbl>
+    ## 1 1 [Mond…   0.754   0.174 0.859                0.00531 0.211     0.541    0.210
+    ## 2 2 [Tues…   0.784   0.157 0.878                0.00598 0.209     0.509    0.207
+    ## 3 3 [Wedn…   0.803   0.172 0.893                0.00517 0.209     0.511    0.206
+    ## 4 4 [Thur…   0.799   0.170 0.892                0.00637 0.209     0.513    0.216
+    ## 5 5 [Frid…   0.803   0.191 0.896                0.00492 0.195     0.561    0.259
+    ## 6 6 [Satu…   0.240   0.274 0.876                0.00773 0.0140    0.902    0.367
+    ## 7 7 [Sund…   0.231   0.301 0.959                0.00879 0.0178    0.648    0.413
 
 ``` r
 AADT_factors_all <- N_bar_daily_all |>
@@ -803,15 +805,16 @@ AADT_factors_all |>
   mutate(weekly_trips = AADT_all*7)
 ```
 
-    ## # A tibble: 6 × 3
-    ##   NPT_purpose AADT_all weekly_trips
-    ##   <chr>          <dbl>        <dbl>
-    ## 1 Commute        0.614         4.30
-    ## 2 Leisure        0.209         1.46
-    ## 3 Other          0.902         6.31
-    ## 4 School         0.147         1.03
-    ## 5 Shopping       0.601         4.21
-    ## 6 Visiting       0.274         1.92
+    ## # A tibble: 7 × 3
+    ##   NPT_purpose          AADT_all weekly_trips
+    ##   <chr>                   <dbl>        <dbl>
+    ## 1 Commute               0.614         4.30  
+    ## 2 Leisure               0.209         1.46  
+    ## 3 Other                 0.895         6.27  
+    ## 4 Recreational Cycling  0.00642       0.0450
+    ## 5 School                0.147         1.03  
+    ## 6 Shopping              0.601         4.21  
+    ## 7 Visiting              0.274         1.92
 
 ***NOTE:*** The commute trip rate is normalised for all adult population
 i.e., employed + unemployed.
@@ -982,15 +985,16 @@ write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
 AADT_output
 ```
 
-    ## # A tibble: 6 × 5
-    ##   NPT_purpose AADT_all AADT_bike Weekly_all_total Weekly_bike_total
-    ##   <chr>          <dbl>     <dbl>            <dbl>             <dbl>
-    ## 1 Commute        0.973     0.735             6.81             5.14 
-    ## 2 Leisure        0.209     0.106             1.46             0.744
-    ## 3 Other          0.902     0.875             6.31             6.12 
-    ## 4 School         0.147     0.266             1.03             1.86 
-    ## 5 Shopping       0.601     0.223             4.21             1.56 
-    ## 6 Visiting       0.274     0.199             1.92             1.39
+    ## # A tibble: 7 × 5
+    ##   NPT_purpose          AADT_all AADT_bike Weekly_all_total Weekly_bike_total
+    ##   <chr>                   <dbl>     <dbl>            <dbl>             <dbl>
+    ## 1 Commute               0.973       0.735           6.81               5.14 
+    ## 2 Leisure               0.209       0.106           1.46               0.744
+    ## 3 Other                 0.895       0.566           6.27               3.96 
+    ## 4 Recreational Cycling  0.00642     0.318           0.0450             2.23 
+    ## 5 School                0.147       0.266           1.03               1.86 
+    ## 6 Shopping              0.601       0.223           4.21               1.56 
+    ## 7 Visiting              0.274       0.199           1.92               1.39
 
 Committing the changes
 
@@ -1016,7 +1020,175 @@ AADT_output |>
     ## # A tibble: 1 × 4
     ##   AADT_all AADT_bike Weekly_all_total Weekly_bike_total
     ##      <dbl>     <dbl>            <dbl>             <dbl>
-    ## 1     3.10      2.40             21.7              16.8
+    ## 1     3.11      2.41             21.7              16.9
+
+### Outbound and Return analysis
+
+The following code present a summary of the trip rates for all modes
+disaggregating by direction
+
+``` r
+purpose_trips_all_dir = data.stage |>
+  select(mode,UNIQIDNEW,dyear,IND_WT,trav_wt,purpose_new,travday) |> 
+  left_join(NPT_purposes_equiv,by = "purpose_new") |>
+  mutate(NPT_purpose = if_else(is.na(NPT_purpose),"Other",NPT_purpose),
+         NPT_purpose = if_else(str_length(purpose_new)==3,
+                               paste(NPT_purpose,"Return"),paste(NPT_purpose,"Outbound")))|>
+  summarise(N_trips = n(),
+            .by = c(dyear,travday,UNIQIDNEW,NPT_purpose,trav_wt)) |> 
+  summarise(N_trips = sum(N_trips*trav_wt,na.rm = T),
+            .by = c(dyear,NPT_purpose,travday)) 
+
+N_bar_daily_all_dir = purpose_trips_all_dir |> 
+  left_join(total_respondents_all,
+            by=join_by(dyear,travday)) |> 
+  mutate(N_bar = N_trips/N_ind) |> 
+  summarise(across(N_bar,mean,na.rm = T),.by = c(NPT_purpose,travday)) |> 
+  arrange(NPT_purpose,travday)
+
+N_bar_daily_all_dir |>
+  arrange(NPT_purpose) |> 
+  print(n=105)
+```
+
+    ## # A tibble: 105 × 3
+    ##     NPT_purpose                   travday         N_bar
+    ##     <chr>                         <dbl+lbl>       <dbl>
+    ##   1 Commute Outbound              1 [Monday]    0.673  
+    ##   2 Commute Outbound              2 [Tuesday]   0.709  
+    ##   3 Commute Outbound              3 [Wednesday] 0.729  
+    ##   4 Commute Outbound              4 [Thursday]  0.744  
+    ##   5 Commute Outbound              5 [Friday]    0.743  
+    ##   6 Commute Outbound              6 [Saturday]  0.222  
+    ##   7 Commute Outbound              7 [Sunday]    0.209  
+    ##   8 Commute Return                1 [Monday]    0.546  
+    ##   9 Commute Return                2 [Tuesday]   0.574  
+    ##  10 Commute Return                3 [Wednesday] 0.574  
+    ##  11 Commute Return                4 [Thursday]  0.584  
+    ##  12 Commute Return                5 [Friday]    0.583  
+    ##  13 Commute Return                6 [Saturday]  0.169  
+    ##  14 Commute Return                7 [Sunday]    0.164  
+    ##  15 Leisure Outbound              1 [Monday]    0.191  
+    ##  16 Leisure Outbound              2 [Tuesday]   0.173  
+    ##  17 Leisure Outbound              3 [Wednesday] 0.185  
+    ##  18 Leisure Outbound              4 [Thursday]  0.202  
+    ##  19 Leisure Outbound              5 [Friday]    0.229  
+    ##  20 Leisure Outbound              6 [Saturday]  0.305  
+    ##  21 Leisure Outbound              7 [Sunday]    0.308  
+    ##  22 Leisure Return                1 [Monday]    0.0897 
+    ##  23 Leisure Return                2 [Tuesday]   0.0836 
+    ##  24 Leisure Return                3 [Wednesday] 0.0851 
+    ##  25 Leisure Return                4 [Thursday]  0.0846 
+    ##  26 Leisure Return                5 [Friday]    0.0777 
+    ##  27 Leisure Return                6 [Saturday]  0.153  
+    ##  28 Leisure Return                7 [Sunday]    0.184  
+    ##  29 Other Outbound                1 [Monday]    1.12   
+    ##  30 Other Outbound                2 [Tuesday]   1.10   
+    ##  31 Other Outbound                3 [Wednesday] 1.16   
+    ##  32 Other Outbound                4 [Thursday]  1.16   
+    ##  33 Other Outbound                5 [Friday]    1.18   
+    ##  34 Other Outbound                6 [Saturday]  1.13   
+    ##  35 Other Outbound                7 [Sunday]    1.18   
+    ##  36 Other Return                  1 [Monday]    0.280  
+    ##  37 Other Return                  2 [Tuesday]   0.289  
+    ##  38 Other Return                  3 [Wednesday] 0.274  
+    ##  39 Other Return                  4 [Thursday]  0.270  
+    ##  40 Other Return                  5 [Friday]    0.243  
+    ##  41 Other Return                  6 [Saturday]  0.319  
+    ##  42 Other Return                  7 [Sunday]    0.368  
+    ##  43 Recreational Cycling Outbound 1 [Monday]    0.00529
+    ##  44 Recreational Cycling Outbound 2 [Tuesday]   0.00693
+    ##  45 Recreational Cycling Outbound 3 [Wednesday] 0.00469
+    ##  46 Recreational Cycling Outbound 4 [Thursday]  0.00802
+    ##  47 Recreational Cycling Outbound 5 [Friday]    0.00410
+    ##  48 Recreational Cycling Outbound 6 [Saturday]  0.00857
+    ##  49 Recreational Cycling Outbound 7 [Sunday]    0.00837
+    ##  50 Recreational Cycling Return   1 [Monday]    0.00326
+    ##  51 Recreational Cycling Return   2 [Tuesday]   0.00321
+    ##  52 Recreational Cycling Return   3 [Wednesday] 0.00316
+    ##  53 Recreational Cycling Return   4 [Thursday]  0.00315
+    ##  54 Recreational Cycling Return   5 [Friday]    0.00529
+    ##  55 Recreational Cycling Return   6 [Saturday]  0.00690
+    ##  56 Recreational Cycling Return   7 [Sunday]    0.00583
+    ##  57 School Outbound               1 [Monday]    0.214  
+    ##  58 School Outbound               2 [Tuesday]   0.213  
+    ##  59 School Outbound               3 [Wednesday] 0.216  
+    ##  60 School Outbound               4 [Thursday]  0.222  
+    ##  61 School Outbound               5 [Friday]    0.205  
+    ##  62 School Outbound               6 [Saturday]  0.0161 
+    ##  63 School Outbound               7 [Sunday]    0.0182 
+    ##  64 School Return                 1 [Monday]    0.132  
+    ##  65 School Return                 2 [Tuesday]   0.127  
+    ##  66 School Return                 3 [Wednesday] 0.116  
+    ##  67 School Return                 4 [Thursday]  0.107  
+    ##  68 School Return                 5 [Friday]    0.111  
+    ##  69 School Return                 6 [Saturday]  0.00874
+    ##  70 School Return                 7 [Sunday]    0.00840
+    ##  71 Shopping Outbound             1 [Monday]    0.550  
+    ##  72 Shopping Outbound             2 [Tuesday]   0.524  
+    ##  73 Shopping Outbound             3 [Wednesday] 0.524  
+    ##  74 Shopping Outbound             4 [Thursday]  0.543  
+    ##  75 Shopping Outbound             5 [Friday]    0.587  
+    ##  76 Shopping Outbound             6 [Saturday]  0.884  
+    ##  77 Shopping Outbound             7 [Sunday]    0.629  
+    ##  78 Shopping Return               1 [Monday]    0.328  
+    ##  79 Shopping Return               2 [Tuesday]   0.315  
+    ##  80 Shopping Return               3 [Wednesday] 0.312  
+    ##  81 Shopping Return               4 [Thursday]  0.312  
+    ##  82 Shopping Return               5 [Friday]    0.324  
+    ##  83 Shopping Return               6 [Saturday]  0.624  
+    ##  84 Shopping Return               7 [Sunday]    0.409  
+    ##  85 Visiting Outbound             1 [Monday]    0.236  
+    ##  86 Visiting Outbound             2 [Tuesday]   0.243  
+    ##  87 Visiting Outbound             3 [Wednesday] 0.235  
+    ##  88 Visiting Outbound             4 [Thursday]  0.253  
+    ##  89 Visiting Outbound             5 [Friday]    0.303  
+    ##  90 Visiting Outbound             6 [Saturday]  0.418  
+    ##  91 Visiting Outbound             7 [Sunday]    0.434  
+    ##  92 Visiting Return               1 [Monday]    0.105  
+    ##  93 Visiting Return               2 [Tuesday]   0.105  
+    ##  94 Visiting Return               3 [Wednesday] 0.0901 
+    ##  95 Visiting Return               4 [Thursday]  0.101  
+    ##  96 Visiting Return               5 [Friday]    0.116  
+    ##  97 Visiting Return               6 [Saturday]  0.185  
+    ##  98 Visiting Return               7 [Sunday]    0.233  
+    ##  99 <NA>                          1 [Monday]    0.00957
+    ## 100 <NA>                          2 [Tuesday]   0.00725
+    ## 101 <NA>                          3 [Wednesday] 0.0142 
+    ## 102 <NA>                          4 [Thursday]  0.0276 
+    ## 103 <NA>                          5 [Friday]    0.0150 
+    ## 104 <NA>                          6 [Saturday]  0.0251 
+    ## 105 <NA>                          7 [Sunday]    0.00152
+
+``` r
+N_bar_daily_all_dir |>
+  mutate(d.weight = case_when(travday < 6 ~ 50,
+                              travday == 6 ~ 52,
+                              travday == 7 ~ 63)) |>
+  summarise(AADT_all = weighted.mean(N_bar, w = d.weight),
+            .by = NPT_purpose) |>
+  mutate(weekly_trips = AADT_all*7) |> 
+  print(n=15)
+```
+
+    ## # A tibble: 15 × 3
+    ##    NPT_purpose                   AADT_all weekly_trips
+    ##    <chr>                            <dbl>        <dbl>
+    ##  1 Commute Outbound               0.560         3.92  
+    ##  2 Commute Return                 0.444         3.11  
+    ##  3 Leisure Outbound               0.231         1.62  
+    ##  4 Leisure Return                 0.111         0.779 
+    ##  5 Other Outbound                 1.15          8.05  
+    ##  6 Other Return                   0.295         2.06  
+    ##  7 Recreational Cycling Outbound  0.00664       0.0465
+    ##  8 Recreational Cycling Return    0.00447       0.0313
+    ##  9 School Outbound                0.152         1.06  
+    ## 10 School Return                  0.0839        0.588 
+    ## 11 Shopping Outbound              0.608         4.26  
+    ## 12 Shopping Return                0.377         2.64  
+    ## 13 Visiting Outbound              0.308         2.16  
+    ## 14 Visiting Return                0.137         0.962 
+    ## 15 <NA>                           0.0139        0.0975
 
 ## References
 
