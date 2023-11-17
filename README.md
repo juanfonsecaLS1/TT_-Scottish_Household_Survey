@@ -587,10 +587,10 @@ kable(tbl_purposes |>
                        select(-NPT_purpose)) |>
   pack_rows(index = table(tbl_purposes$NPT_purpose)) |> 
   kable_classic(full_width = F) |>
-  as_image(width = 10,file = "README_files/figure-gfm/purpose_table.png")
+  as_image(width = 6,file = "README_files/figure-gfm/purpose_table.png")
 ```
 
-<img src="README_files/figure-gfm/purpose_table.png" width="960" />
+<img src="README_files/figure-gfm/purpose_table.png" width="576" />
 
 Based on this purposes, we can produce a plot for proportion of trips by
 day of travel for each dataset
