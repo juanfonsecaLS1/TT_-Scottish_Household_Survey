@@ -718,7 +718,8 @@ AADT_output <- bind_rows(AADT_factors_employed,
           AADT_factors_bike_BL |>
             filter(NPT_purpose!="Commute"))) |> 
   mutate(across(starts_with("AADT"),list(total = \(x) x*7))) |> 
-  rename_with(.fn = ~str_replace(.x,"^AADT","Weekly"),.cols = ends_with("total"))
+  rename_with(.fn = ~str_replace(.x,"^AADT","Weekly"),.cols = ends_with("total")) |> 
+  mutate(across(where(is.numeric),\(x) round(x,4)))
 
 write_csv(AADT_output,"../npt/data-raw/AADT_factors.csv")
 
