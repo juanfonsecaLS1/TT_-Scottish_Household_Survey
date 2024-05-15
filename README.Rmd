@@ -194,6 +194,20 @@ tld_bands = c(0,5,10,15,25,50,100,500,1000,2500)
 ### By mode
 
 ```{r}
+TL_summary_mode = data |> filter(mainmode<7) |> 
+  summarise(mean_dist = weighted.mean(roadnet_kms,trav_wt,na.rm = T),
+            .by = c(dyear,mainmode)) 
+
+TL_summary_mode |> 
+   mutate(mainmode = haven::as_factor(mainmode)) |> 
+  ggplot(aes(x = dyear,y=mean_dist,col= mainmode))+
+  geom_line()+
+  theme(legend.position = "bottom")
+
+```
+
+
+```{r}
 TLD_mode = data |> 
   mutate(dist_band = cut(roadnet_kms,
                          breaks = tld_bands,
@@ -291,6 +305,28 @@ SPSS_files_stage = list.files(pattern = "stage.*\\.sav$",
 
 data.stage = do.call(bind_rows,lapply(SPSS_files_stage,read_sav))
 ```
+
+## Trip length using stage data
+
+```{r}
+TL_summary_stages <- data.stage |> 
+  filter(mode < 7) |> 
+  summarise(avg.dist = weighted.mean(stage_distance,trav_wt,na.rm = T),
+            .by = c(mode,purpose_old,dyear))
+```
+
+
+```{r}
+TL_summary_stages |>
+   mutate(mode = haven::as_factor(mode),
+          purpose_old = haven::as_factor(purpose_old)) |> 
+  ggplot(aes(x=dyear,y = avg.dist,col = mode))+
+  geom_line()+
+  facet_wrap(purpose_old~.)+
+  theme(legend.position = "bottom")
+```
+
+
 
 ### Bike baseline
 
